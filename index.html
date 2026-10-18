@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#171310">
+<meta name="theme-color" content="#14100b">
 <meta name="description" content="Mara — an urge-surfing companion. Clinical, shame-free, private.">
 <title>Mara</title>
 <link rel="manifest" href="manifest.json">
@@ -11,105 +11,166 @@
 <link rel="apple-touch-icon" href="icon.svg">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#171310;--surface:#221c15;--surface2:#2a2119;--text:#f0e8dc;--muted:#a89880;--accent:#e8a33d;--sage:#9caf88;--red:#c05b4d;--border:#3a2e20;--onaccent:#171310}
+:root{
+  --bg:#14100b;--surface:#1d1712;--surface-2:#272017;--border:#3b2f21;
+  --text:#f3ead9;--muted:#b6a68c;--faint:#8d7f68;
+  --amber:#e9a13b;--amber-deep:#c07f24;--on-amber:#1a1208;
+  --sage:#9db387;--red:#c9604f;--calm:#8ba7b5;
+  --shadow:0 10px 28px rgba(0,0,0,.35);
+  --ease:cubic-bezier(.2,.7,.3,1);
+}
 html{-webkit-text-size-adjust:100%}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.5;padding-bottom:96px;min-height:100vh}
-header{position:sticky;top:0;background:rgba(23,19,16,.96);backdrop-filter:blur(6px);border-bottom:1px solid var(--border);padding:13px 16px;z-index:20;display:flex;justify-content:space-between;align-items:center}
-header h1{font-size:17px;letter-spacing:3px;color:var(--accent);font-weight:700}
-header .phase{font-size:12px;color:var(--muted)}
-main{max-width:560px;margin:0 auto;padding:16px 16px 24px}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.55;padding-bottom:120px;min-height:100vh;-webkit-tap-highlight-color:transparent}
+::selection{background:rgba(233,161,59,.32)}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+button{font-family:inherit;transition:transform .18s var(--ease),filter .18s var(--ease),background-color .18s var(--ease),box-shadow .18s var(--ease)}
+button:active{transform:scale(.97)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+/* ---------- header ---------- */
+header{position:sticky;top:0;background:rgba(20,16,11,.88);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:14px 20px;z-index:20;display:flex;justify-content:space-between;align-items:center}
+header h1{font-size:17px;font-weight:800;letter-spacing:2px;color:var(--text)}
+header .hdate{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+/* ---------- layout ---------- */
+main{max-width:560px;margin:0 auto;padding:20px 20px 24px}
 .tab{display:none}
 .tab.active{display:block;animation:fade .22s ease}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px}
-.card.accent{border-color:var(--accent)}
-.card h2{font-size:14px;letter-spacing:1px;color:var(--accent);margin-bottom:8px;text-transform:uppercase}
-.card h3{font-size:15px;margin-bottom:6px}
-.card p{margin-bottom:10px;color:var(--text)}
-.card p.small,.small{font-size:13px;color:var(--muted)}
-.hint{font-size:13px;color:var(--muted);margin-bottom:10px}
-.btn{display:block;width:100%;padding:15px;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;background:var(--accent);color:var(--onaccent);margin:8px 0}
-.btn:active{transform:scale(.985)}
-.btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text);font-weight:600}
-.btn.sage{background:var(--sage);color:#14210f}
+.screenhead{margin:2px 0 18px}
+.screentitle{font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px}
+.eyebrow{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:10px}
+/* ---------- cards ---------- */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card.current{background:var(--surface-2)}
+.card h2{font-size:16px;font-weight:700;color:var(--text);margin-bottom:10px}
+.card h3{font-size:15px;font-weight:700;margin-bottom:6px;color:var(--text)}
+.card p{margin-bottom:10px}
+.small{font-size:14px;color:var(--muted);line-height:1.55}
+.hint{font-size:14px;color:var(--muted);margin-bottom:12px;line-height:1.55}
+.num{font-variant-numeric:tabular-nums}
+.bq{font-size:19px;font-weight:700;color:var(--text);margin-bottom:10px;line-height:1.5}
+/* ---------- buttons ---------- */
+.btn{display:block;width:100%;min-height:52px;padding:14px 16px;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;background:var(--amber);color:var(--on-amber);margin:8px 0}
+.btn:hover{filter:brightness(1.05)}
+.btn:active{transform:scale(.97);filter:brightness(1.08)}
+.btn.ghost{background:var(--surface-2);border:1px solid var(--border);color:var(--text);font-weight:600}
+.btn.sage{background:var(--sage);color:#16210f}
 .btn.danger{background:transparent;border:1px solid var(--red);color:var(--red);font-weight:600}
-.btn.small{padding:10px;font-size:14px}
-.btnrow{display:flex;gap:8px}
+.btn.small{min-height:48px;padding:10px 14px;font-size:15px}
+.btnrow{display:flex;gap:10px}
 .btnrow .btn{margin:4px 0}
-#urgeBtn{min-height:132px;font-size:30px;letter-spacing:6px;border-radius:18px;margin:6px 0 12px;box-shadow:0 6px 28px rgba(232,163,61,.22)}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px}
-.chip{padding:10px 16px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;cursor:pointer}
-.chip.on{background:var(--accent);border-color:var(--accent);color:var(--onaccent);font-weight:700}
-input[type=text],input[type=time],textarea,select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:12px;font-size:15px;font-family:inherit;margin:6px 0 12px}
-textarea{min-height:88px;resize:vertical}
-input[type=range]{width:100%;accent-color:var(--accent);margin:10px 0}
-.rangelabels{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
-.bigval{font-size:44px;font-weight:800;color:var(--accent);text-align:center;margin:6px 0}
-.stepbar{display:flex;gap:6px;margin-bottom:14px}
-.stepbar i{flex:1;height:4px;border-radius:2px;background:var(--surface2)}
-.stepbar i.done{background:var(--accent)}
-.guard{background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:12px;margin:12px 0;font-size:14px}
+/* ---------- URGE hero ---------- */
+#urgeBtn{min-height:120px;font-size:20px;font-weight:800;letter-spacing:4px;text-indent:4px;border-radius:18px;margin:4px 0 16px;color:var(--on-amber);background:linear-gradient(135deg,var(--amber),var(--amber-deep));box-shadow:0 8px 32px rgba(233,161,59,.28);animation:breathe 3.4s ease-in-out infinite}
+@keyframes breathe{0%,100%{box-shadow:0 8px 30px rgba(233,161,59,.22)}50%{box-shadow:0 8px 46px rgba(233,161,59,.45)}}
+/* ---------- chips ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 14px}
+.chip{display:inline-flex;align-items:center;min-height:44px;padding:10px 18px;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:15px;font-weight:600;cursor:pointer;line-height:1.3}
+.chip.on{background:rgba(233,161,59,.16);border-color:var(--amber);color:var(--amber)}
+/* ---------- inputs ---------- */
+.fldlabel{display:block;font-size:15px;font-weight:600;color:var(--text);margin:14px 0 8px}
+label.fld{display:block;font-size:15px;font-weight:600;color:var(--text);margin:14px 0 8px}
+label.fld .qh{display:block;font-size:13px;font-weight:400;color:var(--muted);margin-top:2px}
+input[type=text],input[type=time],textarea,select{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;color:var(--text);padding:14px;font-size:16px;font-family:inherit;margin:0 0 12px;min-height:52px;line-height:1.5}
+textarea{min-height:96px;resize:vertical}
+input[type=range]{width:100%;accent-color:var(--calm);margin:4px 0;height:44px}
+.rangelabels{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin:0 0 8px}
+/* ---------- stats ---------- */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:4px 0}
+.stat{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:16px 10px;text-align:center}
+.stat .v{font-size:28px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums;line-height:1.1}
+.stat .l{font-size:12px;font-weight:700;color:var(--muted);margin-top:8px;letter-spacing:1.2px;text-transform:uppercase}
+/* ---------- wizard progress ---------- */
+.wprog{margin:2px 0 20px}
+.wprog-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.wprog-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)}
+.wprog-track{height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.wprog-fill{height:100%;width:20%;border-radius:3px;background:var(--calm);transition:width .3s var(--ease)}
+/* ---------- timer ---------- */
+.timerwrap{width:212px;height:212px;margin:12px auto 16px;border:3px solid rgba(139,167,181,.35);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.timer{font-size:56px;font-weight:800;letter-spacing:2px;color:var(--text);font-variant-numeric:tabular-nums}
+/* ---------- guards / callouts / banners ---------- */
+.guard{background:var(--surface-2);border-left:3px solid var(--calm);border-radius:0 12px 12px 0;padding:14px 16px;margin:14px 0;font-size:14px;line-height:1.55}
 .guard.red{border-left-color:var(--red)}
 .guard.green{border-left-color:var(--sage)}
-.banner{background:rgba(232,163,61,.12);border:1px solid var(--accent);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:14px}
-.banner b{color:var(--accent)}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center}
-.stat .v{font-size:22px;font-weight:800;color:var(--accent)}
-.stat .l{font-size:11.5px;color:var(--muted);margin-top:2px;letter-spacing:.4px;text-transform:uppercase}
-.timer{font-size:52px;font-weight:800;text-align:center;letter-spacing:2px;margin:8px 0;color:var(--text);font-variant-numeric:tabular-nums}
-.logitem{border:1px solid var(--border);border-radius:10px;margin-bottom:8px;background:var(--surface)}
-.logitem summary{padding:12px;cursor:pointer;font-size:14px;list-style:none;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.callout{background:rgba(139,167,181,.12);border:1px solid rgba(139,167,181,.42);border-radius:12px;padding:12px 14px;margin:12px 0;font-size:14px;line-height:1.55;color:var(--text)}
+.vbanner{display:flex;gap:12px;align-items:flex-start;background:rgba(139,167,181,.1);border:1px solid rgba(139,167,181,.45);border-radius:14px;padding:12px 12px 12px 14px;margin-bottom:16px;font-size:14px;line-height:1.5}
+.vbanner svg{flex-shrink:0;margin-top:2px}
+.vbanner .vtxt{flex:1;color:var(--text)}
+.vbanner .vtxt b{color:var(--text)}
+.vdismiss{flex-shrink:0;width:44px;height:44px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+/* ---------- logs ---------- */
+.logitem{border:1px solid var(--border);border-radius:14px;margin-bottom:10px;background:var(--surface-2)}
+.logitem summary{padding:14px 16px;cursor:pointer;font-size:14px;list-style:none;display:flex;justify-content:space-between;gap:10px;align-items:center;min-height:52px}
 .logitem summary::-webkit-details-marker{display:none}
-.logitem .body{padding:0 12px 12px;font-size:13.5px;color:var(--muted);white-space:pre-wrap}
-.tag{font-size:11px;font-weight:700;letter-spacing:.6px;padding:3px 9px;border-radius:999px;text-transform:uppercase}
-.tag.surf{background:rgba(156,175,136,.18);color:var(--sage)}
-.tag.lapse{background:rgba(192,91,77,.16);color:var(--red)}
-.tag.exit{background:rgba(168,152,128,.16);color:var(--muted)}
-.planitem,.carditem{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;font-size:14px}
-.planitem button,.carditem button{flex-shrink:0;background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:2px 6px}
-.flipcard{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;cursor:pointer}
-.flipcard .counter{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);color:var(--accent)}
+.logitem .body{padding:0 16px 14px;font-size:14px;color:var(--muted);white-space:pre-wrap;line-height:1.55}
+.tag{font-size:12px;font-weight:700;letter-spacing:.6px;padding:4px 10px;border-radius:999px;text-transform:uppercase;white-space:nowrap}
+.tag.surf{background:rgba(157,179,135,.18);color:var(--sage)}
+.tag.lapse{background:rgba(201,96,79,.16);color:var(--red)}
+.tag.exit{background:rgba(182,166,140,.16);color:var(--muted)}
+.kv{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:8px 0;border-bottom:1px dashed var(--border);line-height:1.5}
+.kv b{color:var(--text);font-weight:600;text-align:right}
+/* ---------- plans / cards lists ---------- */
+.planitem{display:flex;justify-content:space-between;gap:12px;align-items:center;background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:10px 10px 10px 16px;margin-bottom:10px;font-size:15px;line-height:1.5}
+.planitem>span{flex:1}
+.delbtn{flex-shrink:0;min-width:44px;height:44px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:20px;font-weight:400;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0 12px}
+.delbtn.armed{width:auto;border-color:var(--red);color:var(--red);font-size:14px;font-weight:700;white-space:nowrap}
+.flipcard{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;cursor:pointer}
+.flipcard .counter{display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--border);color:var(--text);font-size:14px;line-height:1.55}
 .flipcard.open .counter{display:block}
-.flipcard .tap{font-size:12px;color:var(--muted);margin-top:8px}
-#tabbar{position:fixed;bottom:0;left:0;right:0;background:rgba(23,19,16,.97);backdrop-filter:blur(8px);border-top:1px solid var(--border);display:flex;z-index:20;padding-bottom:env(safe-area-inset-bottom)}
-#tabbar button{flex:1;background:none;border:none;color:var(--muted);font-size:10.5px;padding:10px 2px 12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:inherit}
-#tabbar button .dot{width:8px;height:8px;border-radius:50%;background:var(--border)}
-#tabbar button.on{color:var(--accent)}
-#tabbar button.on .dot{background:var(--accent)}
-#overlay{position:fixed;inset:0;background:rgba(10,8,6,.82);z-index:50;display:none;align-items:flex-end;justify-content:center;padding:16px}
+.flipfoot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:10px}
+.flipcard .tap{font-size:12px;color:var(--muted)}
+/* ---------- tab bar ---------- */
+#tabbar{position:fixed;bottom:0;left:0;right:0;background:rgba(20,16,11,.92);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--border);display:flex;z-index:20;padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
+#tabbar button{flex:1;min-height:58px;background:none;border:none;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-radius:999px;padding:6px 2px;min-width:0}
+#tabbar button svg{width:22px;height:22px;flex-shrink:0}
+#tabbar button span{white-space:nowrap}
+#tabbar button.on{background:rgba(233,161,59,.14);color:var(--amber)}
+/* ---------- bottom sheet ---------- */
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;display:none;align-items:flex-end;justify-content:center}
 #overlay.open{display:flex}
-.sheet{background:var(--surface);border:1px solid var(--border);border-radius:18px 18px 0 0;width:100%;max-width:560px;max-height:82vh;overflow-y:auto;padding:18px 16px calc(20px + env(safe-area-inset-bottom))}
-.sheet h2{font-size:15px;color:var(--accent);letter-spacing:1px;margin-bottom:10px;text-transform:uppercase}
-.q{margin-bottom:14px}
-.q label{display:block;font-size:13.5px;font-weight:600;margin-bottom:2px}
-.q .qh{font-size:12.5px;color:var(--muted);margin-bottom:4px}
-footer.appfoot{text-align:center;color:var(--muted);font-size:12.5px;margin-top:22px;line-height:1.7}
-footer.appfoot button{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:8px 14px;font-size:13px;margin:4px;cursor:pointer;font-family:inherit}
-.chart{width:100%;height:110px;display:block}
-.chartlbl{font-size:12px;color:var(--muted);margin:10px 0 2px}
+.sheet{background:var(--surface);border:1px solid var(--border);border-bottom:none;border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:82vh;overflow-y:auto;padding:8px 20px calc(20px + env(safe-area-inset-bottom))}
+.sheet .grab{width:44px;height:5px;border-radius:3px;background:var(--border);margin:8px auto 14px}
+.sheet h2{font-size:16px;font-weight:700;color:var(--text);margin-bottom:12px}
+/* ---------- questions ---------- */
+.q{margin-bottom:16px}
+.q label{display:block;font-size:15px;font-weight:600;color:var(--text);margin-bottom:8px;line-height:1.45}
+.q .qh{display:block;font-size:13px;font-weight:400;color:var(--muted);margin-top:2px}
+.rgroup{margin-bottom:22px}
+.rgroup:last-child{margin-bottom:8px}
+/* ---------- sticky save bar ---------- */
+.savebar{position:sticky;bottom:calc(88px + env(safe-area-inset-bottom));background:rgba(39,32,23,.95);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:16px;padding:12px 14px;margin:0 0 16px;box-shadow:var(--shadow);z-index:5}
+.savebar .prog{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:10px;text-align:center}
+.savebar .btn{margin:0}
+/* ---------- empty states ---------- */
+.empty{text-align:center;padding:28px 16px;color:var(--muted);font-size:14px;line-height:1.6}
+.empty p{margin-bottom:6px}
+.empty .btn{margin-top:14px}
+/* ---------- charts ---------- */
+.chart{width:100%;height:120px;display:block}
+.chart[hidden]{display:none}
+/* ---------- footer ---------- */
+footer.appfoot{text-align:center;color:var(--muted);font-size:13px;margin-top:28px;line-height:1.7}
+footer.appfoot button{background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:12px 16px;font-size:14px;font-weight:600;margin:4px;cursor:pointer;min-height:48px}
 .wizardstep{display:none}
 .wizardstep.on{display:block;animation:fade .22s ease}
-.kv{display:flex;justify-content:space-between;font-size:13.5px;padding:6px 0;border-bottom:1px dashed var(--border)}
-.kv b{color:var(--text);font-weight:600}
 </style>
 </head>
 <body>
-<header><h1>MARA</h1><span class="phase" id="phaseLabel"></span></header>
+<header><h1>Mara</h1><span class="hdate" id="phaseLabel"></span></header>
 <main>
 
 <!-- ============ HOME ============ -->
 <section id="tab-home" class="tab">
+  <div class="screenhead"><h2 class="screentitle">Home</h2></div>
   <div id="vulnBanner"></div>
   <button id="urgeBtn" class="btn">URGE</button>
   <div id="gate" class="card" hidden>
     <h2>Before you start</h2>
-    <p class="small" style="margin-bottom:4px">PFC online right now?</p>
+    <p class="fldlabel">PFC online right now?</p>
     <div class="chips" id="pfcChips">
       <button class="chip on" data-v="yes">Yes</button>
       <button class="chip" data-v="no">No — exhausted, drunk, in crisis</button>
     </div>
-    <p class="small" style="margin-bottom:2px">Urge intensity: <b id="gateIntVal" style="color:var(--accent)">5</b>/10</p>
+    <label class="fld" for="gateInt">Urge intensity: <b id="gateIntVal" class="num">5</b>/10</label>
     <input type="range" id="gateInt" min="1" max="10" value="5" step="1">
     <div class="rangelabels"><span>1 — faint</span><span>10 — overwhelming</span></div>
     <button class="btn" id="gateGo" style="margin-top:12px">Continue</button>
@@ -129,7 +190,7 @@ footer.appfoot button{background:none;border:1px solid var(--border);color:var(-
     <div>
       <button id="expBtn">Export data (JSON)</button>
       <button id="impBtn">Import data</button>
-      <input type="file" id="impFile" accept="application/json" hidden>
+      <input type="file" id="impFile" accept="application/json" hidden aria-label="Import backup file">
     </div>
     <p style="margin-top:10px">This app is a tool, not treatment.<br>All data stays on this device.</p>
   </footer>
@@ -137,36 +198,39 @@ footer.appfoot button{background:none;border:1px solid var(--border);color:var(-
 
 <!-- ============ SURF ============ -->
 <section id="tab-surf" class="tab">
-  <div class="stepbar" id="surfBar"><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="screenhead"><h2 class="screentitle">Surf</h2></div>
+  <div class="wprog"><div class="wprog-top"><span class="wprog-label" id="surfStepLbl">Step 1 of 5</span></div><div class="wprog-track"><div class="wprog-fill" id="surfFill"></div></div></div>
 
   <div class="wizardstep" id="s0">
-    <div class="card accent">
+    <div class="card current">
       <h2>Step 1 — Detect</h2>
       <p>Label it, out loud or in your head:</p>
-      <p style="font-size:19px;font-weight:700;color:var(--accent)">"I am experiencing an urge."</p>
+      <p class="bq">"I am experiencing an urge."</p>
       <p class="small">Naming it engages the prefrontal cortex. That's the whole job of this step.</p>
       <button class="btn" id="s0go">Done — I labeled it</button>
     </div>
   </div>
 
   <div class="wizardstep" id="s1">
-    <div class="card accent">
-      <h2>Step 2 — Predict <span class="tag" style="background:rgba(232,163,61,.2);color:var(--accent)">the mechanism step</span></h2>
-      <p>State your prediction <b>explicitly</b>. Expectancy violation is what makes the learning happen — without a prediction, there is nothing to violate.</p>
+    <div class="card current">
+      <h2>Step 2 — Predict</h2>
+      <div class="callout"><b>The mechanism step</b> — expectancy violation is what makes the learning happen.</div>
+      <p>State your prediction <b>explicitly</b>. Without a prediction, there is nothing to violate.</p>
+      <label class="fld" for="sPred">Your prediction</label>
       <textarea id="sPred" placeholder='e.g. "I predict this will keep getting worse until I act on it."'></textarea>
       <button class="btn" id="s1go">Continue</button>
     </div>
   </div>
 
   <div class="wizardstep" id="s2">
-    <div class="card accent">
+    <div class="card current">
       <h2>Step 3 — Rate</h2>
-      <p>Rate the urge intensity: <b id="sRateVal" style="color:var(--accent)">5</b>/10</p>
+      <label class="fld" for="sRate">Rate the urge intensity: <b id="sRateVal" class="num">5</b>/10</label>
       <input type="range" id="sRate" min="1" max="10" value="5" step="1">
       <div class="rangelabels"><span>1</span><span>10</span></div>
-      <p class="small" style="margin-top:10px">Trigger (optional, a few words):</p>
+      <label class="fld" for="sTrigger">Trigger <span class="qh">optional, a few words</span></label>
       <input type="text" id="sTrigger" placeholder="e.g. phone in bed, bored, memory flashback">
-      <p class="small">External or internal?</p>
+      <p class="fldlabel">External or internal?</p>
       <div class="chips" id="sTrigType">
         <button class="chip" data-v="external">External</button>
         <button class="chip" data-v="internal">Internal</button>
@@ -176,9 +240,9 @@ footer.appfoot button{background:none;border:1px solid var(--border);color:var(-
   </div>
 
   <div class="wizardstep" id="s3">
-    <div class="card accent">
+    <div class="card current">
       <h2>Step 4 — Sit</h2>
-      <div class="timer" id="sitTimer">00:00</div>
+      <div class="timerwrap"><div class="timer num" id="sitTimer">00:00</div></div>
       <p class="small" style="text-align:center" id="rerateHint">Re-rate every ~5 minutes. Watch the number change.</p>
       <div class="guard"><b>Body scan:</b> where do you feel it? Chest? Stomach? Jaw? Just notice. Neutral language: <i>"I notice a pulling sensation…"</i> Your only job is to observe.</div>
       <div class="guard red"><b>No safety behaviors during Sit.</b> No cold shower, no distraction, no "just edging." Your brain must credit <b>your capacity</b> — not a crutch — or no learning happens.</div>
@@ -187,7 +251,7 @@ footer.appfoot button{background:none;border:1px solid var(--border);color:var(-
         <button class="btn ghost small" id="permBtn">Permission thought firing?</button>
       </div>
       <div id="rerateBox" hidden>
-        <p class="small">Current intensity: <b id="rrVal" style="color:var(--accent)">5</b>/10</p>
+        <label class="fld" for="rrSlider">Current intensity: <b id="rrVal" class="num">5</b>/10</label>
         <input type="range" id="rrSlider" min="1" max="10" value="5" step="1">
         <button class="btn small" id="rrSave">Save rating</button>
         <div id="rrHist" class="small" style="margin-top:6px"></div>
@@ -200,9 +264,10 @@ footer.appfoot button{background:none;border:1px solid var(--border);color:var(-
   </div>
 
   <div class="wizardstep" id="s4">
-    <div class="card accent">
+    <div class="card current">
       <h2>Step 5 — Consolidate</h2>
       <p>The urge subsided. Now encode the learning — this is data, not affirmation:</p>
+      <label class="fld" for="sViolation">Prediction vs. what happened</label>
       <textarea id="sViolation"></textarea>
       <button class="btn" id="s4go">Log this surf</button>
     </div>
@@ -211,10 +276,11 @@ footer.appfoot button{background:none;border:1px solid var(--border);color:var(-
 
 <!-- ============ CIRCUIT BREAKER ============ -->
 <section id="tab-breaker" class="tab">
-  <div class="stepbar" id="brkBar"><i></i><i></i><i></i><i></i></div>
+  <div class="screenhead"><h2 class="screentitle">Circuit breaker</h2></div>
+  <div class="wprog"><div class="wprog-top"><span class="wprog-label" id="brkStepLbl">Step 1 of 4</span></div><div class="wprog-track"><div class="wprog-fill" id="brkFill"></div></div></div>
 
   <div class="wizardstep" id="b0">
-    <div class="card accent">
+    <div class="card current">
       <h2>1 — Stop</h2>
       <p style="font-size:17px">One data point. <b>Not a reset.</b></p>
       <p>A lapse is an instance. A relapse is a pattern. The chain from lapse to binge is <b>not</b> automatic — unless you let the "already failed" thought drive.</p>
@@ -223,19 +289,19 @@ footer.appfoot button{background:none;border:1px solid var(--border);color:var(-
   </div>
 
   <div class="wizardstep" id="b1">
-    <div class="card accent">
+    <div class="card current">
       <h2>2 — State the facts</h2>
       <p class="hint">No adjectives. No "pathetic," no "again." Just facts — that voice is the AVE talking.</p>
-      <div class="q"><label>What happened</label><input type="text" id="bBehav" placeholder="e.g. viewed explicit content ~10 min"></div>
-      <div class="q"><label>Time</label><input type="time" id="bTime"></div>
-      <div class="q"><label>Context</label><input type="text" id="bCtx" placeholder="e.g. bedroom, alone, 1 AM"></div>
-      <div class="q"><label>Trigger</label><input type="text" id="bTrig" placeholder="e.g. bored scrolling → suggestive image"></div>
+      <div class="q"><label for="bBehav">What happened</label><input type="text" id="bBehav" placeholder="e.g. viewed explicit content ~10 min"></div>
+      <div class="q"><label for="bTime">Time</label><input type="time" id="bTime"></div>
+      <div class="q"><label for="bCtx">Context</label><input type="text" id="bCtx" placeholder="e.g. bedroom, alone, 1 AM"></div>
+      <div class="q"><label for="bTrig">Trigger</label><input type="text" id="bTrig" placeholder="e.g. bored scrolling → suggestive image"></div>
       <button class="btn" id="b1go">Continue</button>
     </div>
   </div>
 
   <div class="wizardstep" id="b2">
-    <div class="card accent">
+    <div class="card current">
       <h2>3 — Physical reset</h2>
       <p class="hint">Break the state-dependent pattern. Check each off:</p>
       <div class="chips" id="bReset">
@@ -248,19 +314,19 @@ footer.appfoot button{background:none;border:1px solid var(--border);color:var(-
   </div>
 
   <div class="wizardstep" id="b3">
-    <div class="card accent">
+    <div class="card current">
       <h2>4 — Forensic debrief</h2>
       <p class="hint">Within a few hours, in writing. There was a permission-giving thought — there always is. Find it.</p>
-      <div class="q"><label>1. Full chain from the earliest antecedent?</label><textarea id="dChain" rows="2"></textarea></div>
-      <div class="q"><label>2. Emotional state before / during / after?</label><textarea id="dEmo" rows="2"></textarea></div>
-      <div class="q"><label>3. The permission-giving thought — verbatim</label><input type="text" id="dPerm" placeholder="e.g. &quot;just a peek won't hurt&quot;"></div>
-      <div class="q"><label>4. Where did it become hard to interrupt?</label><input type="text" id="dHard"></div>
-      <div class="q"><label>5. What intervention point did you miss?</label><input type="text" id="dMissed"></div>
-      <div class="q"><label>6. What need was it meeting? (the function)</label><input type="text" id="dFunc" placeholder="e.g. boredom, loneliness, couldn't sleep"></div>
-      <div class="q"><label>7. System failure or execution failure?</label>
+      <div class="q"><label for="dChain">1. Full chain from the earliest antecedent?</label><textarea id="dChain" rows="2"></textarea></div>
+      <div class="q"><label for="dEmo">2. Emotional state before / during / after?</label><textarea id="dEmo" rows="2"></textarea></div>
+      <div class="q"><label for="dPerm">3. The permission-giving thought — verbatim</label><input type="text" id="dPerm" placeholder="e.g. &quot;just a peek won't hurt&quot;"></div>
+      <div class="q"><label for="dHard">4. Where did it become hard to interrupt?</label><input type="text" id="dHard"></div>
+      <div class="q"><label for="dMissed">5. What intervention point did you miss?</label><input type="text" id="dMissed"></div>
+      <div class="q"><label for="dFunc">6. What need was it meeting? (the function)</label><input type="text" id="dFunc" placeholder="e.g. boredom, loneliness, couldn't sleep"></div>
+      <div class="q"><label for="dSys">7. System failure or execution failure?</label>
         <select id="dSys"><option value="">—</option><option>System failure — the system didn't cover this</option><option>Execution failure — I didn't run the system</option></select>
       </div>
-      <div class="q"><label>ONE system fix <span class="qh">Not five. One.</span></label><input type="text" id="dFix" placeholder="e.g. phone charges outside bedroom from tonight"></div>
+      <div class="q"><label for="dFix">ONE system fix <span class="qh">Not five. One.</span></label><input type="text" id="dFix" placeholder="e.g. phone charges outside bedroom from tonight"></div>
       <button class="btn" id="b3go">Finish — arm vulnerability window</button>
     </div>
   </div>
@@ -268,14 +334,20 @@ footer.appfoot button{background:none;border:1px solid var(--border);color:var(-
 
 <!-- ============ DASHBOARD ============ -->
 <section id="tab-dash" class="tab">
+  <div class="screenhead"><h2 class="screentitle">Stats</h2></div>
   <div class="card">
     <h2>Win rate — last 30 days</h2>
     <svg class="chart" id="chWin" viewBox="0 0 300 110" preserveAspectRatio="none"></svg>
     <p class="small" id="chWinNote"></p>
+    <div id="chWinCta" class="empty" hidden>
+      <p>No urge data yet — your first surf or lapse will start the curve here.</p>
+      <button class="btn" id="winCtaBtn">Start your first surf</button>
+    </div>
   </div>
   <div class="card">
     <h2>Avg urge intensity — last 30 days</h2>
     <svg class="chart" id="chInt" viewBox="0 0 300 110" preserveAspectRatio="none"></svg>
+    <p class="small" id="chIntNote" hidden>No intensity data yet.</p>
   </div>
   <div class="card">
     <h2>Totals</h2>
@@ -294,9 +366,11 @@ footer.appfoot button{background:none;border:1px solid var(--border);color:var(-
 
 <!-- ============ PLANS ============ -->
 <section id="tab-plans" class="tab">
+  <div class="screenhead"><h2 class="screentitle">Plans</h2></div>
   <div class="card">
     <h2>If-then plans</h2>
     <p class="hint">Decide the response <b>before</b> the urge — not during it. "If [cue], then I will [response]."</p>
+    <label class="fld" for="planText">New if-then plan</label>
     <textarea id="planText" placeholder="If I feel the urge after midnight in bed, then I will put the phone on charge outside the room and read for 10 minutes."></textarea>
     <button class="btn" id="planAdd">Add plan</button>
   </div>
@@ -308,6 +382,7 @@ footer.appfoot button{background:none;border:1px solid var(--border);color:var(-
 
 <!-- ============ CARDS ============ -->
 <section id="tab-cards" class="tab">
+  <div class="screenhead"><h2 class="screentitle">Cards</h2></div>
   <div class="card">
     <h2>Defusion cards</h2>
     <p class="hint">Permission-giving thoughts, each paired with counter-<b>data</b> from your own logs. Not affirmations — data. Tap a card to reveal its counter.</p>
@@ -315,14 +390,15 @@ footer.appfoot button{background:none;border:1px solid var(--border);color:var(-
   </div>
   <div class="card">
     <h2>New card</h2>
-    <div class="q"><label>The thought — verbatim</label><input type="text" id="ncThought" placeholder='e.g. "just a peek won&#39;t hurt"'></div>
-    <div class="q"><label>Counter-data from your logs</label><textarea id="ncCounter" rows="2" placeholder="e.g. In 9 of 10 logged instances, 'just a peek' led to a full cycle within 15 minutes."></textarea></div>
+    <div class="q"><label for="ncThought">The thought — verbatim</label><input type="text" id="ncThought" placeholder='e.g. "just a peek won&#39;t hurt"'></div>
+    <div class="q"><label for="ncCounter">Counter-data from your logs</label><textarea id="ncCounter" rows="2" placeholder="e.g. In 9 of 10 logged instances, 'just a peek' led to a full cycle within 15 minutes."></textarea></div>
     <button class="btn" id="cardAdd">Add card</button>
   </div>
 </section>
 
 <!-- ============ CHECK-IN ============ -->
 <section id="tab-checkin" class="tab">
+  <div class="screenhead"><h2 class="screentitle">Check-in</h2></div>
   <div class="card">
     <h2>HALTS-B scan</h2>
     <p class="hint">30 seconds. Tap whatever is loaded right now — a loaded scan predicts tomorrow's urge load.</p>
@@ -345,17 +421,27 @@ footer.appfoot button{background:none;border:1px solid var(--border);color:var(-
 
 <!-- ============ REVIEW ============ -->
 <section id="tab-review" class="tab">
+  <div class="screenhead"><h2 class="screentitle">Review</h2></div>
   <div class="card">
     <h2>Sunday 15-minute review</h2>
     <p class="hint">Answer from your logs above. Then: one pattern → one adjustment.</p>
-    <div class="q"><label>How many urges this week?</label><input type="text" id="rUrges"></div>
-    <div class="q"><label>Average intensity?</label><input type="text" id="rInt"></div>
-    <div class="q"><label>Most common trigger?</label><input type="text" id="rTrig"></div>
-    <div class="q"><label>Where do you usually catch the chain?</label><input type="text" id="rChain"></div>
-    <div class="q"><label>Any safety behaviors creeping in?</label><input type="text" id="rSafe"></div>
-    <div class="q"><label>Mood / sleep / stress trend?</label><textarea id="rMood" rows="2"></textarea></div>
-    <div class="q"><label>One pattern from this week's data</label><textarea id="rPat" rows="2"></textarea></div>
-    <div class="q"><label>One adjustment</label><input type="text" id="rAdj"></div>
+    <div class="rgroup">
+      <div class="eyebrow">The week</div>
+      <div class="q"><label for="rUrges">How many urges this week?</label><input type="text" id="rUrges"></div>
+      <div class="q"><label for="rInt">Average intensity?</label><input type="text" id="rInt"></div>
+      <div class="q"><label for="rTrig">Most common trigger?</label><input type="text" id="rTrig"></div>
+      <div class="q"><label for="rChain">Where do you usually catch the chain?</label><input type="text" id="rChain"></div>
+    </div>
+    <div class="rgroup">
+      <div class="eyebrow">Patterns</div>
+      <div class="q"><label for="rSafe">Any safety behaviors creeping in?</label><input type="text" id="rSafe"></div>
+      <div class="q"><label for="rMood">Mood / sleep / stress trend?</label><textarea id="rMood" rows="2"></textarea></div>
+      <div class="q"><label for="rPat">One pattern from this week's data</label><textarea id="rPat" rows="2"></textarea></div>
+      <div class="q"><label for="rAdj">One adjustment</label><input type="text" id="rAdj"></div>
+    </div>
+  </div>
+  <div class="savebar">
+    <div class="prog num" id="revProg">0 of 8 answered</div>
     <button class="btn" id="revSave">Save review</button>
   </div>
   <div class="guard red"><b>Escalation rule:</b> if urges consistently track depressive crashes or anxiety spikes, talk to a professional. This app is a tool, not treatment.</div>
@@ -367,17 +453,18 @@ footer.appfoot button{background:none;border:1px solid var(--border);color:var(-
 
 </main>
 
-<nav id="tabbar">
-  <button data-tab="home" class="on"><span class="dot"></span>Home</button>
-  <button data-tab="surf"><span class="dot"></span>Surf</button>
-  <button data-tab="dash"><span class="dot"></span>Stats</button>
-  <button data-tab="plans"><span class="dot"></span>Plans</button>
-  <button data-tab="cards"><span class="dot"></span>Cards</button>
-  <button data-tab="checkin"><span class="dot"></span>Check-in</button>
-  <button data-tab="review"><span class="dot"></span>Review</button>
+<nav id="tabbar" aria-label="Main navigation">
+  <button data-tab="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7"/><path d="M6 9.5V20h12V9.5"/></svg><span>Home</span></button>
+  <button data-tab="surf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 16c3-4.5 6-4.5 9 0s6 4.5 9 0"/></svg><span>Surf</span></button>
+  <button data-tab="dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16"/><path d="M7 20v-5M12 20V9M17 20v-8"/></svg><span>Stats</span></button>
+  <button data-tab="plans"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 6h10M9.5 12h10M9.5 18h10"/><path d="M3.5 5.5l1.4 1.4 2.6-2.9M3.5 11.5l1.4 1.4 2.6-2.9M3.5 17.5l1.4 1.4 2.6-2.9"/></svg><span>Plans</span></button>
+  <button data-tab="cards"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M5 16V6a1 1 0 0 1 1-1h10"/></svg><span>Cards</span></button>
+  <button data-tab="checkin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8.3 12.4l2.5 2.5 4.9-6"/></svg><span>Check-in</span></button>
+  <button data-tab="review"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="4.5" width="12" height="16" rx="2"/><path d="M9 4.5a3 3 0 0 1 6 0"/><path d="M9.5 11h5M9.5 14.5h3.5"/></svg><span>Review</span></button>
 </nav>
 
-<div id="overlay"><div class="sheet">
+<div id="overlay"><div class="sheet" role="dialog" aria-modal="true" aria-label="Defusion card">
+  <div class="grab" aria-hidden="true"></div>
   <h2>Defusion card</h2>
   <div id="ovCards"></div>
   <button class="btn" id="ovClose" style="margin-top:12px">Continue sitting</button>
@@ -400,6 +487,7 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){}}
 function dayStr(ts){var d=new Date(ts);return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
 function fmtDT(ts){var d=new Date(ts);return d.toLocaleDateString()+' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
 function $(id){return document.getElementById(id);}
+var vulnHidden=null;
 
 /* ================= TABS ================= */
 var RENDER={};
@@ -442,10 +530,14 @@ function renderHome(){
   $('stClean').textContent=s.clean==null?'—':s.clean+'%';
   $('stLong').textContent=s.longest?Math.round(s.longest)+'m @'+s.longInt:'—';
   $('stTotal').textContent=s.total;
-  $('phaseLabel').textContent='Phase '+(DB.settings.phase||0);
+  $('phaseLabel').textContent=new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
   var vb=$('vulnBanner');
   if(DB.vulnUntil&&DB.vulnUntil>Date.now()){
-    vb.innerHTML='<div class="banner"><b>Vulnerability window active</b> until '+esc(fmtDT(DB.vulnUntil))+' — Phase 1 rules are back on. Extra friction, no decisions while vulnerable.</div>';
+    if(vulnHidden===DB.vulnUntil){vb.innerHTML='';}
+    else{
+      vb.innerHTML='<div class="vbanner" role="status"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8ba7b5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L2.8 20h18.4L12 4z"/><path d="M12 10v4.5"/><circle cx="12" cy="17.4" r=".7" fill="#8ba7b5" stroke="none"/></svg><div class="vtxt"><b>Vulnerability window active</b> until '+esc(fmtDT(DB.vulnUntil))+' — Phase 1 rules are back on. Extra friction, no decisions while vulnerable.</div><button class="vdismiss" id="vdis" aria-label="Dismiss banner">&times;</button></div>';
+      $('vdis').addEventListener('click',function(){vulnHidden=DB.vulnUntil;vb.innerHTML='';});
+    }
   }else{vb.innerHTML='';if(DB.vulnUntil)DB.vulnUntil=null;}
 }
 RENDER.home=renderHome;
@@ -496,8 +588,8 @@ $('impFile').addEventListener('change',function(e){
 var S=null;
 function surfStep(n){
   for(var i=0;i<=4;i++)$('s'+i).classList.toggle('on',i===n);
-  var bars=$('surfBar').children;
-  for(var j=0;j<bars.length;j++)bars[j].classList.toggle('done',j<=n);
+  $('surfFill').style.width=((n+1)/5*100)+'%';
+  $('surfStepLbl').textContent='Step '+(n+1)+' of 5';
 }
 function startSurf(inten){
   S={t0:Date.now(),prediction:'',ratings:[{t:Date.now(),v:inten}],trigType:null,timer:null,lastRate:Date.now()};
@@ -568,7 +660,7 @@ $('lapsedBtn').addEventListener('click',function(){stopTimer();startBreaker();})
 /* ---- Defusion overlay ---- */
 function renderOvCards(){
   $('ovCards').innerHTML=DB.cards.map(function(c){
-    return '<div class="flipcard" data-id="'+c.id+'"><div><b>'+esc(c.thought)+'</b></div><div class="counter">'+esc(c.counter)+'</div><div class="tap">tap to reveal counter-data</div></div>';
+    return '<div class="flipcard" data-id="'+c.id+'" tabindex="0" role="button" aria-label="Defusion card. Activate to reveal counter-data."><div><b>'+esc(c.thought)+'</b></div><div class="counter">'+esc(c.counter)+'</div><div class="tap">tap to reveal counter-data</div></div>';
   }).join('')||'<p class="small">No cards yet.</p>';
 }
 $('ovCards').addEventListener('click',function(e){
@@ -579,13 +671,19 @@ $('ovCards').addEventListener('click',function(e){
 $('permBtn').addEventListener('click',function(){renderOvCards();$('overlay').classList.add('open');});
 $('ovClose').addEventListener('click',function(){$('overlay').classList.remove('open');});
 $('overlay').addEventListener('click',function(e){if(e.target===$('overlay'))$('overlay').classList.remove('open');});
+document.addEventListener('keydown',function(e){
+  var t=e.target;
+  if((e.key==='Enter'||e.key===' ')&&t&&t.classList&&t.classList.contains('flipcard')&&!t.closest('button')){
+    e.preventDefault();t.classList.toggle('open');
+  }
+});
 
 /* ================= CIRCUIT BREAKER ================= */
 var B=null;
 function brkStep(n){
   for(var i=0;i<=3;i++)$('b'+i).classList.toggle('on',i===n);
-  var bars=$('brkBar').children;
-  for(var j=0;j<bars.length;j++)bars[j].classList.toggle('done',j<=n);
+  $('brkFill').style.width=((n+1)/4*100)+'%';
+  $('brkStepLbl').textContent='Step '+(n+1)+' of 4';
 }
 function startBreaker(){
   B={logId:null};
@@ -654,11 +752,14 @@ function last30(){
 function renderDash(){
   var d30=last30();
   var winData=d30.map(function(o){var t=o.surfs+o.lapses;return {v:t?o.surfs/t:null};});
-  spark('chWin',winData,'#9caf88');
+  spark('chWin',winData,'#9db387');
   var anyWin=winData.some(function(x){return x.v!=null;});
-  $('chWinNote').textContent=anyWin?'Daily share of urges surfed (vs lapsed). Gaps = no urge logged that day.':'No urge data yet — log your first surf or lapse.';
+  var anyInt=d30.some(function(o){return o.intN>0;});
+  $('chWin').hidden=!anyWin;$('chWinNote').hidden=!anyWin;$('chWinCta').hidden=anyWin;
+  if(anyWin)$('chWinNote').textContent='Daily share of urges surfed (vs lapsed). Gaps = no urge logged that day.';
   var intData=d30.map(function(o){return {v:o.intN?o.intSum/o.intN:null};});
-  spark('chInt',intData,'#e8a33d');
+  $('chInt').hidden=!anyInt;$('chIntNote').hidden=anyInt;
+  spark('chInt',intData,'#8ba7b5');
   var s=stats();
   $('dSurf').textContent=s.surfs;$('dLapse').textContent=s.lapses;
   $('dExit').textContent=s.exits;$('dPlans').textContent=DB.plans.length;
@@ -679,37 +780,50 @@ function renderDash(){
     if(l.notes)det.push(['Notes',l.notes]);
     var body=det.length?det.map(function(p){return '<div class="kv"><span>'+esc(p[0])+'</span><b>'+esc(p[1])+'</b></div>';}).join(''):'<span class="small">No detail recorded.</span>';
     return '<details class="logitem"><summary><span>'+line+'</span></summary><div class="body">'+body+'</div></details>';
-  }).join('')||'<p class="small">Nothing logged yet.</p>';
+  }).join('')||'<div class="empty"><p>Nothing logged yet.</p></div>';
 }
 RENDER.dash=renderDash;
 
 /* ================= PLANS ================= */
 function renderPlans(){
   $('planList').innerHTML=DB.plans.map(function(p){
-    return '<div class="planitem"><span>'+esc(p.text)+'</span><button data-id="'+p.id+'" aria-label="delete">×</button></div>';
-  }).join('')||'<p class="small">No plans yet. Write your first if-then below — decide the response before the urge.</p>';
+    return '<div class="planitem"><span>'+esc(p.text)+'</span><button class="delbtn" data-id="'+p.id+'" aria-label="Delete plan">&times;</button></div>';
+  }).join('')||'<div class="empty"><p>No plans yet. Write your first if-then above — decide the response before the urge.</p></div>';
 }
 RENDER.plans=renderPlans;
 $('planAdd').addEventListener('click',function(){
   var t=$('planText').value.trim();if(!t)return;
   DB.plans.push({id:uid(),text:t});save();$('planText').value='';renderPlans();
 });
+function twoTap(btn,idAttr,label,doDelete){
+  if(btn.classList.contains('armed')){
+    doDelete(btn.getAttribute(idAttr));
+  }else{
+    var scope=btn.closest('#planList,#cardList')||document;
+    scope.querySelectorAll('.delbtn.armed').forEach(function(x){x.classList.remove('armed');x.innerHTML='&times;';x.setAttribute('aria-label',x.getAttribute('data-label')||'Delete');});
+    btn.setAttribute('data-label',label);
+    btn.classList.add('armed');btn.textContent='Confirm?';btn.setAttribute('aria-label','Confirm '+label.toLowerCase());
+    setTimeout(function(){if(btn.isConnected&&btn.classList.contains('armed')){btn.classList.remove('armed');btn.innerHTML='&times;';btn.setAttribute('aria-label',label);}},3200);
+  }
+}
 $('planList').addEventListener('click',function(e){
-  var b=e.target.closest('button');if(!b)return;
-  DB.plans=DB.plans.filter(function(p){return p.id!==b.getAttribute('data-id');});
-  save();renderPlans();
+  var b=e.target.closest('.delbtn');if(!b)return;
+  twoTap(b,'data-id','Delete plan',function(id){
+    DB.plans=DB.plans.filter(function(p){return p.id!==id;});
+    save();renderPlans();
+  });
 });
 
 /* ================= CARDS ================= */
 function renderCards(){
   $('cardList').innerHTML=DB.cards.map(function(c){
-    return '<div class="flipcard" data-id="'+c.id+'"><div><b>'+esc(c.thought)+'</b></div><div class="counter">'+esc(c.counter)+'</div><div style="display:flex;justify-content:space-between;align-items:center"><span class="tap">tap to reveal counter-data</span><button data-del="'+c.id+'" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer" aria-label="delete">×</button></div></div>';
-  }).join('');
+    return '<div class="flipcard" data-id="'+c.id+'" tabindex="0" role="button" aria-label="Defusion card. Activate to reveal counter-data."><div><b>'+esc(c.thought)+'</b></div><div class="counter">'+esc(c.counter)+'</div><div class="flipfoot"><span class="tap">tap to reveal counter-data</span><button class="delbtn" data-del="'+c.id+'" aria-label="Delete card">&times;</button></div></div>';
+  }).join('')||'<div class="empty"><p>No cards yet — add your first defusion card below.</p></div>';
 }
 RENDER.cards=renderCards;
 $('cardList').addEventListener('click',function(e){
-  var del=e.target.closest('[data-del]');
-  if(del){e.stopPropagation();DB.cards=DB.cards.filter(function(c){return c.id!==del.getAttribute('data-del');});save();renderCards();return;}
+  var del=e.target.closest('.delbtn');
+  if(del){e.stopPropagation();twoTap(del,'data-del','Delete card',function(id){DB.cards=DB.cards.filter(function(c){return c.id!==id;});save();renderCards();});return;}
   var f=e.target.closest('.flipcard');if(f)f.classList.toggle('open');
 });
 $('cardAdd').addEventListener('click',function(){
@@ -756,17 +870,27 @@ $('revSave').addEventListener('click',function(){
   if(!text)return;
   DB.reviews.push({ts:Date.now(),text:text});save();
   ['rUrges','rInt','rTrig','rChain','rSafe','rMood','rPat','rAdj'].forEach(function(id){$(id).value='';});
-  renderReviews();
+  renderReviews();revProgress();
 });
 function renderReviews(){
   $('revList').innerHTML=DB.reviews.slice().sort(function(a,b){return b.ts-a.ts;}).map(function(r){
     return '<details class="logitem"><summary><span>'+esc(fmtDT(r.ts))+'</span></summary><div class="body">'+esc(r.text)+'</div></details>';
   }).join('')||'<p class="small">No reviews yet.</p>';
 }
-RENDER.review=renderReviews;
+RENDER.review=function(){renderReviews();revProgress();};
+
+/* ---- Review progress ---- */
+var REV_IDS=['rUrges','rInt','rTrig','rChain','rSafe','rMood','rPat','rAdj'];
+function revProgress(){
+  var n=0;REV_IDS.forEach(function(id){if($(id).value.trim())n++;});
+  $('revProg').textContent=n+' of 8 answered';
+}
+REV_IDS.forEach(function(id){$(id).addEventListener('input',revProgress);});
 
 /* ================= INIT ================= */
 load();save();
+$('winCtaBtn').addEventListener('click',function(){showTab('home');});
+revProgress();
 showTab('home');
 </script>
 </body>
