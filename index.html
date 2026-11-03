@@ -106,6 +106,7 @@ input[type=range]{width:100%;accent-color:var(--slate);margin:4px 0;height:44px}
 .tag.surf{background:rgba(95,206,143,.18);color:var(--mint)}
 .tag.lapse{background:rgba(255,141,117,.16);color:var(--red)}
 .tag.exit{background:rgba(162,162,169,.16);color:var(--muted)}
+.tag.quick{background:rgba(143,163,191,.16);color:var(--slate)}
 .kv{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:8px 0;border-bottom:1px dashed var(--border);line-height:1.5}
 .kv b{color:var(--text);font-weight:600;text-align:right}
 /* ---------- plans / cards lists ---------- */
@@ -163,6 +164,10 @@ footer.appfoot button{background:var(--surface-2);border:1px solid var(--border)
   <div class="screenhead"><h2 class="screentitle">Home</h2></div>
   <div id="vulnBanner"></div>
   <button id="urgeBtn" class="btn">URGE</button>
+  <button id="quickBtn" class="btn ghost">Quick mark</button>
+  <p class="small" style="text-align:center;margin:-2px 0 12px">Not in the mode for the full surf? One tap registers the urge — better a mark than a gap.</p>
+  <div id="quickBox"></div>
+  <div id="openMarks"></div>
   <div id="gate" class="card" hidden>
     <h2>Before you start</h2>
     <p class="fldlabel">PFC online right now?</p>
@@ -423,6 +428,10 @@ footer.appfoot button{background:var(--surface-2);border:1px solid var(--border)
 <section id="tab-review" class="tab">
   <div class="screenhead"><h2 class="screentitle">Review</h2></div>
   <div class="card">
+    <h2>How you're logging</h2>
+    <div id="logSplit"></div>
+  </div>
+  <div class="card">
     <h2>Sunday 15-minute review</h2>
     <p class="hint">Answer from your logs above. Then: one pattern → one adjustment.</p>
     <div class="rgroup">
@@ -506,11 +515,13 @@ document.querySelectorAll('#tabbar button').forEach(function(b){
 
 /* ================= STATS ================= */
 function stats(){
-  var surfs=0,lapses=0,exits=0,longest=0,longInt=0;
+  var surfs=0,lapses=0,exits=0,longest=0,longInt=0,quick=0,quickOpen=0;
   DB.logs.forEach(function(l){
     if(l.type==='surf'){surfs++;if((l.durationMin||0)>longest){longest=l.durationMin;longInt=l.intensityStart||0;}}
     else if(l.type==='lapse'){lapses++;}
     else if(l.type==='exit'){exits++;}
+    else if(l.type==='quick'){quickOpen++;}
+    if(l.quick)quick++;
   });
   var win=(surfs+lapses)>0?Math.round(100*surfs/(surfs+lapses)):null;
   var clean=null;
@@ -522,7 +533,7 @@ function stats(){
     var lapseDays=Object.keys(days).filter(function(d){return days[d].lapse;}).length;
     clean=Math.round(100*(total-lapseDays)/total);
   }
-  return {surfs:surfs,lapses:lapses,exits:exits,win:win,clean:clean,longest:longest,longInt:longInt,total:DB.logs.length};
+  return {surfs:surfs,lapses:lapses,exits:exits,win:win,clean:clean,longest:longest,longInt:longInt,total:DB.logs.length,quick:quick,quickOpen:quickOpen};
 }
 function renderHome(){
   var s=stats();
@@ -539,6 +550,7 @@ function renderHome(){
       $('vdis').addEventListener('click',function(){vulnHidden=DB.vulnUntil;vb.innerHTML='';});
     }
   }else{vb.innerHTML='';if(DB.vulnUntil)DB.vulnUntil=null;}
+  renderOpenMarks();
 }
 RENDER.home=renderHome;
 
@@ -567,6 +579,64 @@ $('gateGo').addEventListener('click',function(){
 function logExit(kind,notes){
   DB.logs.push({id:uid(),ts:Date.now(),type:'exit',intensityStart:null,intensityEnd:null,durationMin:0,triggerType:null,trigger:null,prediction:null,violation:null,permissionThought:null,defusionUsed:false,chainPoint:null,funcNeed:null,systemFix:null,notes:kind+': '+notes});
   save();$('gate').hidden=true;$('gateResult').innerHTML='<div class="guard green"><b>Logged.</b> '+(kind==='capacity'?'Capacity exit recorded — a wise call, not a failure.':'Harm-reduction exit recorded.')+'</div>';renderHome();
+}
+
+/* ---- Quick mark ---- */
+var sessionStart=Date.now();
+var quickId=null,openMarkHidden=null,quickLapseOffer=null;
+function fmtTime(ts){return new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+$('quickBtn').addEventListener('click',function(){
+  var e={id:uid(),ts:Date.now(),type:'quick',quick:true,outcome:null,intensityStart:null,intensityEnd:null,durationMin:0,triggerType:null,trigger:null,prediction:null,violation:null,permissionThought:null,defusionUsed:false,chainPoint:null,funcNeed:null,systemFix:null,notes:'Quick mark'};
+  DB.logs.push(e);save();quickId=e.id;
+  var chips='';
+  for(var i=1;i<=10;i++)chips+='<button class="chip" data-v="'+i+'">'+i+'</button>';
+  $('quickBox').innerHTML='<div class="card"><h2>Marked — '+esc(fmtTime(e.ts))+'</h2><p class="small">Registered. That\'s the whole job done. If you want, tap the intensity — it\'s your most valuable number — or just close this and move on.</p><p class="fldlabel">Intensity (optional)</p><div class="chips" id="quickChips">'+chips+'</div><button class="btn ghost small" id="quickDone">Done</button></div>';
+  $('quickBox').scrollIntoView({behavior:'smooth',block:'center'});
+  renderHome();
+});
+$('quickBox').addEventListener('click',function(ev){
+  var chip=ev.target.closest('#quickChips .chip');
+  if(chip&&quickId){
+    var v=parseInt(chip.getAttribute('data-v'),10);
+    for(var i=0;i<DB.logs.length;i++)if(DB.logs[i].id===quickId)DB.logs[i].intensityStart=v;
+    save();
+    document.querySelectorAll('#quickChips .chip').forEach(function(c){c.classList.toggle('on',c===chip);});
+    setTimeout(function(){$('quickBox').innerHTML='';quickId=null;},700);
+    return;
+  }
+  if(ev.target.closest('#quickDone')){$('quickBox').innerHTML='';quickId=null;}
+});
+function openMarksList(){
+  return DB.logs.filter(function(l){return l.type==='quick'&&(l.ts<sessionStart||l.ts<Date.now()-30*60000);}).sort(function(a,b){return a.ts-b.ts;});
+}
+function renderOpenMarks(){
+  var box=$('openMarks');if(!box)return;
+  if(quickLapseOffer){
+    box.innerHTML='<div class="card"><h2>Logged as a lapse</h2><p class="small">One data point — not a reset. The 48-hour vulnerability window is armed. When you\'re ready, the debrief takes a few minutes and it attaches to this same log — no double-counting.</p><div class="btnrow"><button class="btn small" id="omDebrief">Run the circuit-breaker debrief</button><button class="btn ghost small" id="omLater">Later</button></div></div>';
+    $('omDebrief').addEventListener('click',function(){var id=quickLapseOffer;quickLapseOffer=null;box.innerHTML='';startBreaker(id);});
+    $('omLater').addEventListener('click',function(){quickLapseOffer=null;box.innerHTML='';renderOpenMarks();});
+    return;
+  }
+  var open=openMarksList().filter(function(l){return l.id!==openMarkHidden;});
+  if(!open.length){box.innerHTML='';return;}
+  var l=open[0];
+  box.innerHTML='<div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><h2 style="flex:1">Urge at '+esc(fmtTime(l.ts))+' — how did it end?</h2><button class="vdismiss" id="omDis" aria-label="Dismiss for now">&times;</button></div>'
+    +(open.length>1?'<p class="small">'+open.length+' quick marks are waiting on an outcome. One at a time — no rush.</p>':'<p class="small">One tap, whenever you know. Skip it and the mark still counts as a detected urge.</p>')
+    +'<div class="btnrow"><button class="btn mint small" data-o="surfed">Surfed it</button><button class="btn ghost small" data-o="exited">Exited</button><button class="btn danger small" data-o="lapsed">Acted on it</button></div></div>';
+  $('omDis').addEventListener('click',function(){openMarkHidden=l.id;box.innerHTML='';});
+  box.querySelectorAll('[data-o]').forEach(function(b){
+    b.addEventListener('click',function(){answerOpenMark(l.id,b.getAttribute('data-o'));});
+  });
+}
+function answerOpenMark(id,outcome){
+  var e=null;
+  for(var i=0;i<DB.logs.length;i++)if(DB.logs[i].id===id)e=DB.logs[i];
+  if(!e)return;
+  e.outcome=outcome;
+  if(outcome==='surfed'){e.type='surf';e.intensityEnd=e.intensityStart;}
+  else if(outcome==='exited'){e.type='exit';}
+  else if(outcome==='lapsed'){e.type='lapse';DB.vulnUntil=Date.now()+48*3600*1000;quickLapseOffer=id;}
+  save();renderHome();
 }
 
 /* ---- Export / Import ---- */
@@ -685,8 +755,8 @@ function brkStep(n){
   $('brkFill').style.width=((n+1)/4*100)+'%';
   $('brkStepLbl').textContent='Step '+(n+1)+' of 4';
 }
-function startBreaker(){
-  B={logId:null};
+function startBreaker(attachId){
+  B={logId:attachId||null};
   var d=new Date();
   $('bTime').value=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
   ['bBehav','bCtx','bTrig','dChain','dEmo','dPerm','dHard','dMissed','dFunc','dFix'].forEach(function(id){$(id).value='';});
@@ -701,11 +771,18 @@ $('bReset').addEventListener('click',function(e){
   var b=e.target.closest('.chip');if(b)b.classList.toggle('on');
 });
 $('b2go').addEventListener('click',function(){
-  var entry={id:uid(),ts:Date.now(),type:'lapse',intensityStart:null,intensityEnd:null,durationMin:0,
-    triggerType:null,trigger:$('bTrig').value.trim()||null,prediction:null,violation:null,
-    permissionThought:null,defusionUsed:false,chainPoint:null,funcNeed:null,systemFix:null,
-    notes:'Facts: '+($('bBehav').value.trim()||'—')+' at '+($('bTime').value||'—')+' in '+($('bCtx').value.trim()||'—')};
-  DB.logs.push(entry);save();B.logId=entry.id;brkStep(3);window.scrollTo(0,0);
+  var facts='Facts: '+($('bBehav').value.trim()||'—')+' at '+($('bTime').value||'—')+' in '+($('bCtx').value.trim()||'—');
+  var trig=$('bTrig').value.trim()||null;
+  if(B&&B.logId){
+    for(var i=0;i<DB.logs.length;i++)if(DB.logs[i].id===B.logId){DB.logs[i].notes=((DB.logs[i].notes||'')+'\n'+facts).trim();if(trig)DB.logs[i].trigger=trig;}
+  }else{
+    var entry={id:uid(),ts:Date.now(),type:'lapse',intensityStart:null,intensityEnd:null,durationMin:0,
+      triggerType:null,trigger:trig,prediction:null,violation:null,
+      permissionThought:null,defusionUsed:false,chainPoint:null,funcNeed:null,systemFix:null,
+      notes:facts};
+    DB.logs.push(entry);B.logId=entry.id;
+  }
+  save();brkStep(3);window.scrollTo(0,0);
 });
 $('b3go').addEventListener('click',function(){
   var e=null;
@@ -765,7 +842,8 @@ function renderDash(){
   $('dExit').textContent=s.exits;$('dPlans').textContent=DB.plans.length;
   var logs=DB.logs.slice().sort(function(a,b){return b.ts-a.ts;}).slice(0,30);
   $('logList').innerHTML=logs.map(function(l){
-    var tag=l.type==='surf'?'<span class="tag surf">surfed</span>':l.type==='lapse'?'<span class="tag lapse">lapse</span>':'<span class="tag exit">exit</span>';
+    var tag=l.type==='surf'?'<span class="tag surf">surfed</span>':l.type==='lapse'?'<span class="tag lapse">lapse</span>':l.type==='quick'?'<span class="tag quick">marked</span>':'<span class="tag exit">exit</span>';
+    if(l.quick&&l.type!=='quick')tag=tag.replace('</span>',' · quick</span>');
     var line=fmtDT(l.ts)+' · '+tag;
     if(l.intensityStart!=null)line+=' · '+l.intensityStart+(l.intensityEnd!=null&&l.intensityEnd!==l.intensityStart?'→'+l.intensityEnd:'')+'/10';
     if(l.durationMin)line+=' · '+Math.round(l.durationMin)+'m';
@@ -777,6 +855,7 @@ function renderDash(){
     if(l.funcNeed)det.push(['Function',l.funcNeed]);
     if(l.systemFix)det.push(['System fix',l.systemFix]);
     if(l.chainPoint)det.push(['Hard point',l.chainPoint]);
+    if(l.type==='quick')det.push(['Outcome','Not recorded yet — answer from Home when you know']);
     if(l.notes)det.push(['Notes',l.notes]);
     var body=det.length?det.map(function(p){return '<div class="kv"><span>'+esc(p[0])+'</span><b>'+esc(p[1])+'</b></div>';}).join(''):'<span class="small">No detail recorded.</span>';
     return '<details class="logitem"><summary><span>'+line+'</span></summary><div class="body">'+body+'</div></details>';
@@ -877,7 +956,16 @@ function renderReviews(){
     return '<details class="logitem"><summary><span>'+esc(fmtDT(r.ts))+'</span></summary><div class="body">'+esc(r.text)+'</div></details>';
   }).join('')||'<p class="small">No reviews yet.</p>';
 }
-RENDER.review=function(){renderReviews();revProgress();};
+RENDER.review=function(){renderReviews();revProgress();renderSplit();};
+function renderSplit(){
+  var el=$('logSplit');if(!el)return;
+  var s=stats(),total=s.surfs+s.lapses+s.exits+s.quickOpen;
+  if(!total){el.innerHTML='<p class="small">No urges logged yet.</p>';return;}
+  var qp=Math.round(100*s.quick/total);
+  el.innerHTML='<div class="kv"><span>Full logs (surf / exit / breaker)</span><b>'+(total-s.quick)+'</b></div>'
+    +'<div class="kv"><span>Quick marks</span><b>'+s.quick+(s.quickOpen?' ('+s.quickOpen+' still open)':'')+'</b></div>'
+    +'<p class="small" style="margin-top:10px">Quick marks are '+qp+'% of all logged urges. They\'re doing their job when the alternative was no log at all. If that share keeps climbing, that\'s the old logging-decay signal — worth naming in this review.</p>';
+}
 
 /* ---- Review progress ---- */
 var REV_IDS=['rUrges','rInt','rTrig','rChain','rSafe','rMood','rPat','rAdj'];
