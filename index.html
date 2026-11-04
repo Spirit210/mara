@@ -148,6 +148,22 @@ input[type=range]{width:100%;accent-color:var(--slate);margin:4px 0;height:44px}
 /* ---------- charts ---------- */
 .chart{width:100%;height:120px;display:block}
 .chart[hidden]{display:none}
+/* ---------- fuel ---------- */
+.fuelsec{margin-bottom:16px}
+.fuelstrip{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.fuelstrip::-webkit-scrollbar{display:none}
+.fuelcard{flex:0 0 78%;scroll-snap-align:start;background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:var(--shadow);cursor:pointer;padding:0;text-align:left;font-family:inherit;color:var(--text)}
+.fuelcard img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover}
+.fuelcap{display:block;padding:14px 16px 16px}
+.fuelcap .eyebrow{margin-bottom:6px}
+.fuelquote{display:block;font-size:15px;line-height:1.55;color:var(--text)}
+#fuelbox{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:60;display:none;align-items:center;justify-content:center;padding:20px}
+#fuelbox.open{display:flex}
+.fuelbox-inner{width:100%;max-width:480px;max-height:92vh;overflow-y:auto;text-align:center}
+.fuelbox-inner img{display:block;width:100%;max-height:70vh;object-fit:contain;border-radius:18px}
+#fuelName{margin-top:16px;margin-bottom:6px}
+#fuelQuote{font-size:16px;line-height:1.55;color:var(--text)}
+.fuelx{position:absolute;top:calc(14px + env(safe-area-inset-top));right:14px;width:44px;height:44px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 /* ---------- footer ---------- */
 footer.appfoot{text-align:center;color:var(--muted);font-size:13px;margin-top:28px;line-height:1.7}
 footer.appfoot button{background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:12px 16px;font-size:14px;font-weight:600;margin:4px;cursor:pointer;min-height:48px}
@@ -190,6 +206,19 @@ footer.appfoot button{background:var(--surface-2);border:1px solid var(--border)
       <div class="stat"><div class="v" id="stTotal">0</div><div class="l">Sessions</div></div>
     </div>
     <p class="small">Win rate = urges surfed ÷ (surfs + lapses). Clean % = days with no lapse ÷ days in system. No streaks here — one data point never erases the rest.</p>
+  </div>
+  <div class="fuelsec">
+    <div class="eyebrow">Fuel</div>
+    <div class="fuelstrip">
+      <button type="button" class="fuelcard" data-img="images/tate.jpg" data-alt="Andrew Tate" data-name="Andrew Tate" data-quote="The only thing that you can actually control is your mind." aria-label="Andrew Tate — view fullscreen">
+        <img src="images/tate.jpg" alt="Andrew Tate" loading="lazy">
+        <span class="fuelcap"><span class="eyebrow">Andrew Tate</span><span class="fuelquote">The only thing that you can actually control is your mind.</span></span>
+      </button>
+      <button type="button" class="fuelcard" data-img="images/goggins.jpg" data-alt="David Goggins" data-name="David Goggins" data-quote="You are in danger of living a life so comfortable and soft that you will die without ever realizing your true potential." aria-label="David Goggins — view fullscreen">
+        <img src="images/goggins.jpg" alt="David Goggins" loading="lazy">
+        <span class="fuelcap"><span class="eyebrow">David Goggins</span><span class="fuelquote">You are in danger of living a life so comfortable and soft that you will die without ever realizing your true potential.</span></span>
+      </button>
+    </div>
   </div>
   <footer class="appfoot">
     <div>
@@ -479,6 +508,15 @@ footer.appfoot button{background:var(--surface-2);border:1px solid var(--border)
   <button class="btn" id="ovClose" style="margin-top:12px">Continue sitting</button>
 </div></div>
 
+<div id="fuelbox" role="dialog" aria-modal="true" aria-label="Fuel">
+  <button class="fuelx" id="fuelClose" aria-label="Close">&times;</button>
+  <div class="fuelbox-inner">
+    <img id="fuelImg" src="" alt="">
+    <div class="eyebrow" id="fuelName"></div>
+    <p id="fuelQuote"></p>
+  </div>
+</div>
+
 <script>
 "use strict";
 /* ================= STORE ================= */
@@ -741,6 +779,20 @@ $('ovCards').addEventListener('click',function(e){
 $('permBtn').addEventListener('click',function(){renderOvCards();$('overlay').classList.add('open');});
 $('ovClose').addEventListener('click',function(){$('overlay').classList.remove('open');});
 $('overlay').addEventListener('click',function(e){if(e.target===$('overlay'))$('overlay').classList.remove('open');});
+
+/* ---- Fuel lightbox ---- */
+Array.prototype.forEach.call(document.querySelectorAll('.fuelcard'),function(card){
+  card.addEventListener('click',function(){
+    $('fuelImg').src=card.getAttribute('data-img');
+    $('fuelImg').alt=card.getAttribute('data-alt')||'';
+    $('fuelName').textContent=card.getAttribute('data-name')||'';
+    $('fuelQuote').textContent=card.getAttribute('data-quote')||'';
+    $('fuelbox').classList.add('open');
+  });
+});
+function closeFuel(){$('fuelbox').classList.remove('open');}
+$('fuelClose').addEventListener('click',function(e){e.stopPropagation();closeFuel();});
+$('fuelbox').addEventListener('click',function(){closeFuel();});
 document.addEventListener('keydown',function(e){
   var t=e.target;
   if((e.key==='Enter'||e.key===' ')&&t&&t.classList&&t.classList.contains('flipcard')&&!t.closest('button')){
