@@ -169,6 +169,11 @@ footer.appfoot{text-align:center;color:var(--muted);font-size:13px;margin-top:28
 footer.appfoot button{background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:12px 16px;font-size:14px;font-weight:600;margin:4px;cursor:pointer;min-height:48px}
 .wizardstep{display:none}
 .wizardstep.on{display:block;animation:fade .22s ease}
+/* ---------- victory bank ---------- */
+input[type=number]{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;color:var(--text);padding:14px;font-size:16px;font-family:inherit;margin:0 0 12px;min-height:52px;line-height:1.5}
+.btn[disabled]{opacity:.45;cursor:default}
+.receipt{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:16px;margin:12px 0}
+.savorprompt{font-size:17px;line-height:1.6;color:var(--text)}
 </style>
 </head>
 <body>
@@ -184,6 +189,7 @@ footer.appfoot button{background:var(--surface-2);border:1px solid var(--border)
   <p class="small" style="text-align:center;margin:-2px 0 12px">Not in the mode for the full surf? One tap registers the urge — better a mark than a gap.</p>
   <div id="quickBox"></div>
   <div id="openMarks"></div>
+  <div id="dayMark"></div>
   <div id="gate" class="card" hidden>
     <h2>Before you start</h2>
     <p class="fldlabel">PFC online right now?</p>
@@ -204,6 +210,8 @@ footer.appfoot button{background:var(--surface-2);border:1px solid var(--border)
       <div class="stat"><div class="v" id="stClean">—</div><div class="l">Clean %</div></div>
       <div class="stat"><div class="v" id="stLong">—</div><div class="l">Longest surf</div></div>
       <div class="stat"><div class="v" id="stTotal">0</div><div class="l">Sessions</div></div>
+      <div class="stat"><div class="v" id="stVic">0</div><div class="l">Victories</div></div>
+      <div class="stat"><div class="v" id="stBank">0</div><div class="l">Clean days banked</div></div>
     </div>
     <p class="small">Win rate = urges surfed ÷ (surfs + lapses). Clean % = days with no lapse ÷ days in system. No streaks here — one data point never erases the rest.</p>
   </div>
@@ -383,6 +391,94 @@ footer.appfoot button{background:var(--surface-2);border:1px solid var(--border)
 </section>
 
 <!-- ============ DASHBOARD ============ -->
+<!-- ============ VICTORY ============ -->
+<section id="tab-victory" class="tab">
+  <div class="screenhead"><h2 class="screentitle">Victory</h2></div>
+  <div class="wprog"><div class="wprog-top"><span class="wprog-label" id="vicStepLbl">Step 1 of 5</span></div><div class="wprog-track"><div class="wprog-fill" id="vicFill"></div></div></div>
+
+  <div class="wizardstep" id="v0">
+    <div class="card">
+      <h2>What you predicted vs what happened</h2>
+      <div id="vPredText"></div>
+      <label class="fld" for="vProb">When it hit, what % chance would you have given that you'd act on it?</label>
+      <input type="number" id="vProb" min="0" max="100" step="1" inputmode="numeric" placeholder="0–100">
+      <label class="fld" for="vPredPeak">Peak you expected: <b id="vPredPeakVal" class="num">5</b>/10</label>
+      <input type="range" id="vPredPeak" min="1" max="10" value="5" step="1">
+      <label class="fld" for="vActPeak">Peak it actually reached: <b id="vActPeakVal" class="num">5</b>/10</label>
+      <input type="range" id="vActPeak" min="1" max="10" value="5" step="1">
+      <label class="fld" for="vDur">How long it lasted (minutes)</label>
+      <input type="number" id="vDur" min="0" step="1" inputmode="numeric">
+      <div id="vTrigWrap" hidden>
+        <label class="fld" for="vTrig">Trigger / context</label>
+        <input type="text" id="vTrig" placeholder="e.g. phone in bed, bored">
+      </div>
+      <div id="vDelta"></div>
+      <button class="btn" id="v0go">Continue</button>
+      <button class="btn ghost" id="vQuit">Not now</button>
+    </div>
+  </div>
+
+  <div class="wizardstep" id="v1">
+    <div class="card">
+      <h2>How hard was it, honestly</h2>
+      <p class="fldlabel">The context</p>
+      <div class="chips" id="vNovChips">
+        <button class="chip" data-v="new">New context</button>
+        <button class="chip" data-v="familiar">Familiar context</button>
+      </div>
+      <div class="chips" id="vSetChips">
+        <button class="chip" data-v="alone">Alone</button>
+        <button class="chip" data-v="social">With people around</button>
+      </div>
+      <p class="fldlabel">Aids you used — honestly</p>
+      <div class="chips" id="vAidChips">
+        <button class="chip" data-v="defusion">Defusion card</button>
+        <button class="chip" data-v="plan">If-then plan</button>
+        <button class="chip" data-v="exit">Stepped away briefly</button>
+        <button class="chip" data-v="movement">Movement / cold water</button>
+        <button class="chip on" data-v="none">None</button>
+      </div>
+      <button class="btn" id="v1go">Continue</button>
+    </div>
+  </div>
+
+  <div class="wizardstep" id="v2">
+    <div class="card">
+      <h2>Credit where it's due</h2>
+      <label class="fld" for="vAttrib">What I did that mattered:</label>
+      <textarea id="vAttrib" placeholder="One line, first person. What you actually did."></textarea>
+      <div id="vAttribChipsWrap">
+        <p class="fldlabel">Your own words from past wins — tap to reuse</p>
+        <div class="chips" id="vAttribChips"></div>
+      </div>
+      <p class="small" id="vAttribHint">This line is required. The win isn't banked until you name what you did.</p>
+      <button class="btn" id="v2go">Continue</button>
+    </div>
+  </div>
+
+  <div class="wizardstep" id="v3">
+    <div class="card">
+      <h2>Replay it</h2>
+      <p class="savorprompt">Close your eyes if you can. Go back to the moment the urge turned — where you were, what you saw, what your hands were doing, the second you felt it start to fall. Run it again, slowly. No analysis. Just watch yourself do it.</p>
+      <div class="wprog" style="margin-top:18px"><div class="wprog-track"><div class="wprog-fill" id="vSavorFill" style="width:0%"></div></div></div>
+      <p class="small" id="vSavorTime" style="text-align:center">45s</p>
+      <button class="btn" id="vSavorDone" disabled>Done</button>
+      <button class="btn ghost" id="vSavorSkip">Skip</button>
+    </div>
+  </div>
+
+  <div class="wizardstep" id="v4">
+    <div class="card">
+      <h2>Banked</h2>
+      <div id="vReceipt"></div>
+      <p style="margin-top:12px">The sound doesn't do anything. It's the receipt for what you did.</p>
+      <button class="btn" id="vPlayBtn">Play victory sound</button>
+      <div id="vRecOffer"></div>
+      <button class="btn ghost" id="vDone">Done</button>
+    </div>
+  </div>
+</section>
+
 <section id="tab-dash" class="tab">
   <div class="screenhead"><h2 class="screentitle">Stats</h2></div>
   <div class="card">
@@ -407,6 +503,18 @@ footer.appfoot button{background:var(--surface-2);border:1px solid var(--border)
       <div class="stat"><div class="v" id="dExit">0</div><div class="l">Deliberate exits</div></div>
       <div class="stat"><div class="v" id="dPlans">0</div><div class="l">If-then plans</div></div>
     </div>
+  </div>
+  <div class="card">
+    <h2>Victory Bank</h2>
+    <div class="stats">
+      <div class="stat"><div class="v" id="vbSurfed" style="color:var(--mint)">0</div><div class="l">Urges surfed</div></div>
+      <div class="stat"><div class="v" id="vbVic">0</div><div class="l">Victories</div></div>
+      <div class="stat"><div class="v" id="vbBank">0</div><div class="l">Clean days banked</div></div>
+      <div class="stat"><div class="v" id="vbBig">—</div><div class="l">Biggest expectancy violation</div></div>
+    </div>
+    <div class="kv"><span>Hardest win</span><b id="vbHard">—</b></div>
+    <p class="small" style="margin-top:10px">These numbers only ever go up. A lapse is a data point in the log — it never takes anything out of the bank.</p>
+    <button class="btn ghost" id="vbRetro">Log a victory from today</button>
   </div>
   <div class="card">
     <h2>Recent logs</h2>
@@ -477,6 +585,25 @@ footer.appfoot button{background:var(--surface-2);border:1px solid var(--border)
     <div id="logSplit"></div>
   </div>
   <div class="card">
+    <h2>Evidence — your Victory Bank</h2>
+    <div id="evidenceBox"></div>
+  </div>
+  <div class="card" id="audioCard">
+    <h2>Victory sound</h2>
+    <div class="callout">Your own logged wins are the strongest evidence there is. This sound is a marker, not a motivator.</div>
+    <p class="small" id="audioStatus">Checking…</p>
+    <p class="small">Record one short statement, in your voice: the prediction you beat + what you did. For example: "I said 80% I'd fold. I didn't. I stayed." Best recorded right after a real win. It stays on this device and plays offline. It only ever plays after a banked win, here in Review, or on a past win you open — never during an urge.</p>
+    <div class="btnrow">
+      <button class="btn small" id="recBtn">Record</button>
+      <button class="btn danger small" id="recStopBtn" hidden>Stop</button>
+    </div>
+    <div class="btnrow">
+      <button class="btn ghost small" id="recPlayBtn">Play my recording</button>
+      <button class="btn ghost small" id="recDelBtn">Delete recording</button>
+    </div>
+    <p class="small" id="recStatus"></p>
+  </div>
+  <div class="card">
     <h2>Sunday 15-minute review</h2>
     <p class="hint">Answer from your logs above. Then: one pattern → one adjustment.</p>
     <div class="rgroup">
@@ -539,12 +666,13 @@ footer.appfoot button{background:var(--surface-2);border:1px solid var(--border)
 var KEY='maraData';
 function uid(){return 'x'+Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function blank(){return {logs:[],plans:[],cards:[{id:uid(),thought:"I already slipped, start great tomorrow",counter:"This thought appeared in 8 of 9 lapses. 'Tomorrow' never came for 9 consecutive days."}],halts:[],reviews:[],vulnUntil:null,settings:{phase:0}};}
+function blank(){return {logs:[],plans:[],cards:[{id:uid(),thought:"I already slipped, start great tomorrow",counter:"This thought appeared in 8 of 9 lapses. 'Tomorrow' never came for 9 consecutive days."}],halts:[],reviews:[],victories:[],daymarks:[],vulnUntil:null,settings:{phase:0}};}
 var DB=blank();
 function load(){try{var r=localStorage.getItem(KEY);if(r){var d=JSON.parse(r);if(d&&Array.isArray(d.logs)){DB=d;}}}catch(e){} 
   if(!Array.isArray(DB.logs))DB.logs=[];if(!Array.isArray(DB.plans))DB.plans=[];
   if(!Array.isArray(DB.cards)||!DB.cards.length)DB.cards=blank().cards;
   if(!Array.isArray(DB.halts))DB.halts=[];if(!Array.isArray(DB.reviews))DB.reviews=[];
+  if(!Array.isArray(DB.victories))DB.victories=[];if(!Array.isArray(DB.daymarks))DB.daymarks=[];
   if(!DB.settings)DB.settings={phase:0};}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){}}
 function dayStr(ts){var d=new Date(ts);return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
@@ -595,7 +723,11 @@ function renderHome(){
   $('stClean').textContent=s.clean==null?'—':s.clean+'%';
   $('stLong').textContent=s.longest?Math.round(s.longest)+'m @'+s.longInt:'—';
   $('stTotal').textContent=s.total;
+  var bt=bankTotals();
+  $('stVic').textContent=bt.victories;
+  $('stBank').textContent=bt.banked;
   $('phaseLabel').textContent=new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+  renderDayMark();
   var vb=$('vulnBanner');
   if(DB.vulnUntil&&DB.vulnUntil>Date.now()){
     if(vulnHidden===DB.vulnUntil){vb.innerHTML='';}
@@ -637,7 +769,7 @@ function logExit(kind,notes){
 
 /* ---- Quick mark ---- */
 var sessionStart=Date.now();
-var quickId=null,openMarkHidden=null,quickLapseOffer=null;
+var quickId=null,openMarkHidden=null,quickLapseOffer=null,quickVicOffer=null;
 function fmtTime(ts){return new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
 $('quickBtn').addEventListener('click',function(){
   var e={id:uid(),ts:Date.now(),type:'quick',quick:true,outcome:null,intensityStart:null,intensityEnd:null,durationMin:0,triggerType:null,trigger:null,prediction:null,violation:null,permissionThought:null,defusionUsed:false,chainPoint:null,funcNeed:null,systemFix:null,notes:'Quick mark'};
@@ -665,6 +797,12 @@ function openMarksList(){
 }
 function renderOpenMarks(){
   var box=$('openMarks');if(!box)return;
+  if(quickVicOffer){
+    box.innerHTML='<div class="card"><h2>That was a win</h2><p class="small">You surfed it. If you want it in the Victory Bank — prediction vs outcome, what you did, the receipt — it takes about a minute.</p><div class="btnrow"><button class="btn small" id="omVicStart">Bank this win</button><button class="btn ghost small" id="omVicSkip">Skip</button></div></div>';
+    $('omVicStart').addEventListener('click',function(){var id=quickVicOffer;quickVicOffer=null;box.innerHTML='';var e=null;for(var i=0;i<DB.logs.length;i++)if(DB.logs[i].id===id)e=DB.logs[i];if(e)startVictory({kind:'surf',log:e});});
+    $('omVicSkip').addEventListener('click',function(){quickVicOffer=null;box.innerHTML='';renderOpenMarks();});
+    return;
+  }
   if(quickLapseOffer){
     box.innerHTML='<div class="card"><h2>Logged as a lapse</h2><p class="small">One data point — not a reset. The 48-hour vulnerability window is armed. When you\'re ready, the debrief takes a few minutes and it attaches to this same log — no double-counting.</p><div class="btnrow"><button class="btn small" id="omDebrief">Run the circuit-breaker debrief</button><button class="btn ghost small" id="omLater">Later</button></div></div>';
     $('omDebrief').addEventListener('click',function(){var id=quickLapseOffer;quickLapseOffer=null;box.innerHTML='';startBreaker(id);});
@@ -687,7 +825,7 @@ function answerOpenMark(id,outcome){
   for(var i=0;i<DB.logs.length;i++)if(DB.logs[i].id===id)e=DB.logs[i];
   if(!e)return;
   e.outcome=outcome;
-  if(outcome==='surfed'){e.type='surf';e.intensityEnd=e.intensityStart;}
+  if(outcome==='surfed'){e.type='surf';e.intensityEnd=e.intensityStart;quickVicOffer=id;}
   else if(outcome==='exited'){e.type='exit';}
   else if(outcome==='lapsed'){e.type='lapse';DB.vulnUntil=Date.now()+48*3600*1000;quickLapseOffer=id;}
   save();renderHome();
@@ -773,11 +911,12 @@ $('surfedBtn').addEventListener('click',function(){
 $('s4go').addEventListener('click',function(){
   var v=$('sViolation').value.trim()||null;
   var rs=S.ratings,first=rs[0].v,last=rs[rs.length-1].v;
-  DB.logs.push({id:uid(),ts:Date.now(),type:'surf',intensityStart:first,intensityEnd:last,
+  var ent={id:uid(),ts:Date.now(),type:'surf',intensityStart:first,intensityEnd:last,
     durationMin:Math.round((Date.now()-S.t0)/60000*10)/10,triggerType:S.trigType,trigger:S.trigger,
     prediction:S.prediction,violation:v,permissionThought:S.permThought||null,defusionUsed:!!S.defusionUsed,
-    chainPoint:null,funcNeed:null,systemFix:null,notes:null});
-  save();S=null;surfStep(0);showTab('home');
+    chainPoint:null,funcNeed:null,systemFix:null,notes:null};
+  DB.logs.push(ent);
+  save();S=null;surfStep(0);startVictory({kind:'surf',log:ent});
 });
 $('lapsedBtn').addEventListener('click',function(){stopTimer();startBreaker();});
 
@@ -928,6 +1067,7 @@ function renderDash(){
     var body=det.length?det.map(function(p){return '<div class="kv"><span>'+esc(p[0])+'</span><b>'+esc(p[1])+'</b></div>';}).join(''):'<span class="small">No detail recorded.</span>';
     return '<details class="logitem"><summary><span>'+line+'</span></summary><div class="body">'+body+'</div></details>';
   }).join('')||'<div class="empty"><p>Nothing logged yet.</p></div>';
+  renderVB();
 }
 RENDER.dash=renderDash;
 
@@ -1024,7 +1164,7 @@ function renderReviews(){
     return '<details class="logitem"><summary><span>'+esc(fmtDT(r.ts))+'</span></summary><div class="body">'+esc(r.text)+'</div></details>';
   }).join('')||'<p class="small">No reviews yet.</p>';
 }
-RENDER.review=function(){renderReviews();revProgress();renderSplit();};
+RENDER.review=function(){renderReviews();revProgress();renderSplit();renderEvidence();renderAudioCard();};
 function renderSplit(){
   var el=$('logSplit');if(!el)return;
   var s=stats(),total=s.surfs+s.lapses+s.exits+s.quickOpen;
@@ -1042,6 +1182,370 @@ function revProgress(){
   $('revProg').textContent=n+' of 8 answered';
 }
 REV_IDS.forEach(function(id){$(id).addEventListener('input',revProgress);});
+
+/* ================= VICTORY BANK ================= */
+function difficultyOf(v){return (v.actualPeak||0)*10+Math.min(v.durationMin||0,60)+((v.aids&&v.aids.indexOf('none')>=0)?5:0);}
+function computeVictory(f){
+  var rec={id:uid(),ts:f.ts||Date.now(),kind:f.kind,logId:f.logId||null,date:dayStr(f.ts||Date.now()),
+    predictionText:f.predictionText||null,predictedProb:f.predictedProb==null?null:f.predictedProb,
+    predictedPeak:f.predictedPeak==null?null:f.predictedPeak,actualPeak:f.actualPeak==null?null:f.actualPeak,
+    durationMin:f.durationMin==null?null:f.durationMin,triggerText:f.triggerText||null,
+    novelty:f.novelty||null,setting:f.setting||null,aids:f.aids||[],attribution:f.attribution||null,
+    violationDelta:f.predictedProb||0,peakDelta:(f.predictedPeak||0)-(f.actualPeak||0),
+    difficulty:0,celebration:false,retro:!!f.retro};
+  rec.difficulty=difficultyOf(rec);
+  return rec;
+}
+function bankTotals(){
+  var surfed=0;
+  DB.logs.forEach(function(l){if(l.type==='surf')surfed++;});
+  var banked=DB.daymarks.filter(function(d){return d.state!=='lapsed';}).length;
+  var hardest=null,biggest=null;
+  DB.victories.forEach(function(v){
+    if(v.kind==='day')return;
+    if(!hardest||(v.difficulty||0)>(hardest.difficulty||0))hardest=v;
+    if(!biggest||(v.violationDelta||0)>(biggest.violationDelta||0))biggest=v;
+  });
+  return {surfed:surfed,victories:DB.victories.length,banked:banked,hardest:hardest,biggest:biggest};
+}
+function applyDayMark(state){
+  return {bank:(state==='urge-free'||state==='faced-clean')?1:0,
+    victory:state==='faced-clean'?1:0,
+    route:state==='lapsed'?'breaker':null};
+}
+
+/* ---- Victory sound: his voice, or a built-in tone until he records ---- */
+var AKEY='gogginsVictoryAudio';
+function hasCustomAudio(){try{return !!localStorage.getItem(AKEY);}catch(e){return false;}}
+function playVictorySound(){
+  try{
+    var d=null;try{d=localStorage.getItem(AKEY);}catch(e){}
+    if(d&&typeof Audio!=='undefined'){var a=new Audio(d);var p=a.play();if(p&&p.catch)p.catch(function(){});return true;}
+    var AC=(typeof window!=='undefined')&&(window.AudioContext||window.webkitAudioContext);
+    if(!AC)return false;
+    var ctx=playVictorySound._ctx||(playVictorySound._ctx=new AC());
+    if(ctx.resume)ctx.resume();
+    var notes=[392,523.25,659.25],t=ctx.currentTime;
+    notes.forEach(function(f,i){
+      var o=ctx.createOscillator(),g=ctx.createGain();
+      o.type='triangle';o.frequency.value=f;
+      g.gain.setValueAtTime(0.0001,t+i*0.16);
+      g.gain.exponentialRampToValueAtTime(0.22,t+i*0.16+0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+i*0.16+0.5);
+      o.connect(g);g.connect(ctx.destination);o.start(t+i*0.16);o.stop(t+i*0.16+0.55);
+    });
+    return true;
+  }catch(e){return false;}
+}
+
+/* ---- Recorder (Review > Victory sound) ---- */
+var vRec=null,vStream=null,vChunks=[];
+function renderAudioCard(){
+  var el=$('audioStatus');if(!el)return;
+  el.textContent=hasCustomAudio()
+    ?'Your recorded voice is the victory sound. Re-record anytime — the new take replaces the old one.'
+    :'No recording yet — a short built-in tone plays in its place. Record your voice and it takes over.';
+}
+$('recBtn').addEventListener('click',function(){
+  if(typeof navigator==='undefined'||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||typeof MediaRecorder==='undefined'){
+    $('recStatus').textContent='Recording is not available in this browser.';return;
+  }
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+    vStream=stream;vChunks=[];
+    try{vRec=new MediaRecorder(stream);}catch(e){$('recStatus').textContent='Recording is not available in this browser.';if(vStream){vStream.getTracks().forEach(function(t){t.stop();});vStream=null;}return;}
+    vRec.ondataavailable=function(ev){if(ev.data&&ev.data.size)vChunks.push(ev.data);};
+    vRec.onstop=function(){
+      var blob=new Blob(vChunks,{type:(vChunks[0]&&vChunks[0].type)||'audio/webm'});
+      var r=new FileReader();
+      r.onload=function(){
+        try{localStorage.setItem(AKEY,r.result);$('recStatus').textContent='Saved — your voice is now the victory sound.';}
+        catch(err){$('recStatus').textContent='Could not save that recording (storage may be full).';}
+        renderAudioCard();
+      };
+      r.readAsDataURL(blob);
+      if(vStream){vStream.getTracks().forEach(function(t){t.stop();});vStream=null;}
+      $('recBtn').hidden=false;$('recStopBtn').hidden=true;
+    };
+    vRec.start();
+    $('recBtn').hidden=true;$('recStopBtn').hidden=false;
+    $('recStatus').textContent='Recording… say the prediction you beat + what you did.';
+  }).catch(function(){
+    $('recStatus').textContent='Microphone access was blocked — the built-in tone stays active.';
+  });
+});
+$('recStopBtn').addEventListener('click',function(){if(vRec&&vRec.state!=='inactive')vRec.stop();});
+$('recPlayBtn').addEventListener('click',function(){
+  if(!hasCustomAudio()){$('recStatus').textContent='No recording yet — record one above and it will play here.';return;}
+  playVictorySound();
+});
+$('recDelBtn').addEventListener('click',function(){
+  try{localStorage.removeItem(AKEY);}catch(e){}
+  $('recStatus').textContent='Recording deleted — the built-in tone is active again.';
+  renderAudioCard();
+});
+
+/* ---- The victory flow (5 steps, fixed order) ---- */
+var V=null;
+function vicStep(n){
+  for(var i=0;i<=4;i++)$('v'+i).classList.toggle('on',i===n);
+  $('vicFill').style.width=((n+1)/5*100)+'%';
+  $('vicStepLbl').textContent='Step '+(n+1)+' of 5';
+  if(V)V.step=n;
+  window.scrollTo(0,0);
+}
+RENDER.victory=function(){if(!V)showTab('home');};
+function startVictory(src){
+  var log=src.log||null;
+  V={step:0,kind:src.kind,logId:log?log.id:null,
+    predictionText:log?(log.prediction||null):null,
+    novelty:null,setting:null,aids:['none'],attribution:'',savedId:null,savorTimer:null,
+    prob:null,predPeak:5,actPeak:5,dur:10,triggerText:null};
+  $('vProb').value='';$('vProb').style.borderColor='';
+  var pp=log?(log.intensityStart||5):5;
+  $('vPredPeak').value=pp;$('vPredPeakVal').textContent=pp;
+  var ap=log?(Math.max(log.intensityStart||0,log.intensityEnd||0)||5):5;
+  $('vActPeak').value=ap;$('vActPeakVal').textContent=ap;
+  $('vDur').value=log?Math.max(1,Math.round(log.durationMin||10)):10;
+  $('vTrigWrap').hidden=src.kind!=='retro';
+  if(src.kind==='retro')$('vTrig').value='';
+  $('vPredText').innerHTML=(log&&log.prediction)?'<div class="callout">Your prediction: &ldquo;'+esc(log.prediction)+'&rdquo;</div>':'';
+  document.querySelectorAll('#vNovChips .chip, #vSetChips .chip').forEach(function(c){c.classList.remove('on');});
+  document.querySelectorAll('#vAidChips .chip').forEach(function(c){c.classList.toggle('on',c.getAttribute('data-v')==='none');});
+  $('vAttrib').value='';$('vAttrib').style.borderColor='';
+  renderAttribChips();updateVDelta();
+  vicStep(0);showTab('victory');
+}
+function updateVDelta(){
+  var box=$('vDelta');if(!box)return;
+  var p=$('vProb').value.trim(),pp=parseInt($('vPredPeak').value,10),ap=parseInt($('vActPeak').value,10),d=$('vDur').value;
+  if(p===''){box.innerHTML='<p class="small">Put a number on the prediction — the gap between it and what happened is the evidence.</p>';return;}
+  var prob=Math.max(0,Math.min(100,parseInt(p,10)||0));
+  var pd=pp-ap;
+  box.innerHTML='<div class="kv"><span>You predicted</span><b>'+prob+'% chance you\'d act · peak '+pp+'/10</b></div>'
+    +'<div class="kv"><span>Actual</span><b>You didn\'t act · peak '+ap+'/10 · lasted '+(d===''?'—':d)+' min</b></div>'
+    +'<div class="kv"><span>Expectancy violation</span><b>'+prob+' points · peak '+(pd>=0?pd+' under prediction':Math.abs(pd)+' over prediction')+'</b></div>';
+}
+$('vProb').addEventListener('input',updateVDelta);
+$('vDur').addEventListener('input',updateVDelta);
+$('vPredPeak').addEventListener('input',function(){$('vPredPeakVal').textContent=$('vPredPeak').value;updateVDelta();});
+$('vActPeak').addEventListener('input',function(){$('vActPeakVal').textContent=$('vActPeak').value;updateVDelta();});
+$('v0go').addEventListener('click',function(){
+  if(!V)return;
+  var p=$('vProb').value.trim();
+  if(p===''){$('vProb').style.borderColor='var(--red)';$('vProb').focus();return;}
+  $('vProb').style.borderColor='';
+  V.prob=Math.max(0,Math.min(100,parseInt(p,10)||0));
+  V.predPeak=parseInt($('vPredPeak').value,10);
+  V.actPeak=parseInt($('vActPeak').value,10);
+  V.dur=Math.max(0,parseInt($('vDur').value,10)||0);
+  if(V.kind==='retro')V.triggerText=$('vTrig').value.trim()||null;
+  vicStep(1);
+});
+$('vQuit').addEventListener('click',function(){V=null;showTab('home');});
+function singleChips(wrapId,cb){
+  $(wrapId).addEventListener('click',function(e){
+    var b=e.target.closest('.chip');if(!b)return;
+    document.querySelectorAll('#'+wrapId+' .chip').forEach(function(c){c.classList.toggle('on',c===b);});
+    cb(b.getAttribute('data-v'));
+  });
+}
+singleChips('vNovChips',function(v){if(V)V.novelty=v;});
+singleChips('vSetChips',function(v){if(V)V.setting=v;});
+$('vAidChips').addEventListener('click',function(e){
+  var b=e.target.closest('.chip');if(!b)return;
+  var v=b.getAttribute('data-v');
+  if(v==='none'){
+    document.querySelectorAll('#vAidChips .chip').forEach(function(c){c.classList.toggle('on',c===b);});
+  }else{
+    b.classList.toggle('on');
+    document.querySelectorAll('#vAidChips .chip').forEach(function(c){if(c.getAttribute('data-v')==='none')c.classList.remove('on');});
+    var anyOn=false;
+    document.querySelectorAll('#vAidChips .chip').forEach(function(c){if(c.classList.contains('on'))anyOn=true;});
+    if(!anyOn)document.querySelectorAll('#vAidChips .chip').forEach(function(c){if(c.getAttribute('data-v')==='none')c.classList.add('on');});
+  }
+});
+$('v1go').addEventListener('click',function(){
+  if(!V)return;
+  var aids=[];
+  document.querySelectorAll('#vAidChips .chip').forEach(function(c){if(c.classList.contains('on'))aids.push(c.getAttribute('data-v'));});
+  V.aids=aids.length?aids:['none'];
+  vicStep(2);
+});
+function renderAttribChips(){
+  var seen={},out=[];
+  var vs=DB.victories.slice().sort(function(a,b){return b.ts-a.ts;});
+  vs.forEach(function(v){if(v.attribution&&!seen[v.attribution]){seen[v.attribution]=1;out.push(v.attribution);}});
+  out=out.slice(0,6);
+  $('vAttribChipsWrap').style.display=out.length?'':'none';
+  $('vAttribChips').innerHTML=out.map(function(a){return '<button class="chip" data-a="'+esc(a)+'">'+esc(a)+'</button>';}).join('');
+}
+$('vAttribChips').addEventListener('click',function(e){
+  var b=e.target.closest('.chip');if(!b)return;
+  $('vAttrib').value=b.getAttribute('data-a');$('vAttrib').style.borderColor='';
+});
+$('v2go').addEventListener('click',function(){
+  if(!V)return;
+  var a=$('vAttrib').value.trim();
+  if(!a){$('vAttrib').style.borderColor='var(--red)';$('vAttrib').focus();return;}
+  $('vAttrib').style.borderColor='';
+  V.attribution=a;
+  vicStep(3);startSavor();
+});
+function startSavor(){
+  var total=45,start=Date.now();
+  $('vSavorDone').disabled=true;
+  $('vSavorFill').style.width='0%';$('vSavorTime').textContent=total+'s';
+  if(V.savorTimer)clearInterval(V.savorTimer);
+  V.savorTimer=setInterval(function(){
+    var el=(Date.now()-start)/1000,left=Math.max(0,Math.ceil(total-el));
+    $('vSavorFill').style.width=Math.min(100,el/total*100)+'%';
+    $('vSavorTime').textContent=left+'s';
+    if(el>=total){clearInterval(V.savorTimer);V.savorTimer=null;$('vSavorDone').disabled=false;$('vSavorTime').textContent='Done.';}
+  },250);
+}
+$('vSavorSkip').addEventListener('click',function(){enterReceipt();});
+$('vSavorDone').addEventListener('click',function(){enterReceipt();});
+function enterReceipt(){
+  if(!V||V.savedId)return;
+  if(V.savorTimer){clearInterval(V.savorTimer);V.savorTimer=null;}
+  vicStep(4);
+  var rec=computeVictory({ts:Date.now(),kind:V.kind,logId:V.logId,predictionText:V.predictionText,
+    predictedProb:V.prob,predictedPeak:V.predPeak,actualPeak:V.actPeak,durationMin:V.dur,
+    triggerText:V.triggerText,novelty:V.novelty,setting:V.setting,aids:V.aids,
+    attribution:V.attribution,retro:V.kind==='retro'});
+  DB.victories.push(rec);save();V.savedId=rec.id;
+  var bt=bankTotals();
+  $('vReceipt').innerHTML='<div class="receipt">'
+    +'<div class="kv"><span>Expectancy violation</span><b>'+rec.violationDelta+' points</b></div>'
+    +'<div class="kv"><span>Peak</span><b>predicted '+rec.predictedPeak+'/10 · actual '+rec.actualPeak+'/10</b></div>'
+    +'<div class="kv"><span>What you did</span><b>'+esc(rec.attribution)+'</b></div>'
+    +'<div class="kv"><span>Victories banked</span><b>'+bt.victories+'</b></div>'
+    +'<div class="kv"><span>Clean days banked</span><b>'+bt.banked+'</b></div>'
+    +'</div>';
+  if(playVictorySound()){rec.celebration=true;save();}
+  $('vRecOffer').innerHTML=hasCustomAudio()?''
+    :'<div class="guard" style="margin-top:12px">That was the built-in tone. The real victory sound is your own voice — record the prediction you beat + what you did, and it replaces the tone everywhere.<br><button class="btn small" id="vRecNow" style="margin-top:10px">Record your victory sound</button></div>';
+  var rn=$('vRecNow');
+  if(rn)rn.addEventListener('click',function(){V=null;showTab('review');setTimeout(function(){var c=$('audioCard');if(c)c.scrollIntoView({behavior:'smooth',block:'center'});},80);});
+}
+$('vPlayBtn').addEventListener('click',function(){
+  if(playVictorySound()&&V&&V.savedId){
+    for(var i=0;i<DB.victories.length;i++)if(DB.victories[i].id===V.savedId){DB.victories[i].celebration=true;save();}
+  }
+});
+$('vDone').addEventListener('click',function(){V=null;showTab('home');});
+$('vbRetro').addEventListener('click',function(){startVictory({kind:'retro'});});
+
+/* ---- Clean-Day Mark ---- */
+function dayMarkFor(ds){for(var i=0;i<DB.daymarks.length;i++)if(DB.daymarks[i].date===ds)return DB.daymarks[i];return null;}
+var dmPending=null;
+function saveDayMark(date,state,note,late){
+  var eff=applyDayMark(state);
+  DB.daymarks.push({date:date,state:state,note:note||null,late:!!late,ts:Date.now()});
+  if(eff.victory){
+    DB.victories.push(computeVictory({ts:Date.now(),kind:'day',attribution:null,predictedProb:null,aids:[]}));
+  }
+  save();
+  return eff;
+}
+function renderDayMark(){
+  var box=$('dayMark');if(!box)return;
+  var now=new Date(),today=dayStr(now.getTime()),yest=dayStr(now.getTime()-86400000);
+  var tMark=dayMarkFor(today),yMark=dayMarkFor(yest);
+  var target=null,late=false;
+  if(!tMark&&now.getHours()>=17){target=today;}
+  else if(!yMark){target=yest;late=true;}
+  if(dmPending&&(!target||dmPending.date!==target))dmPending=null;
+  if(!target){
+    box.innerHTML=tMark?'<p class="small" style="text-align:center;margin:0 0 12px">Today is marked: '+(tMark.state==='urge-free'?'urge-free — banked':tMark.state==='faced-clean'?'urge faced, stayed clean — banked':'lapsed — logged')+'.</p>':'';
+    return;
+  }
+  var when=late?'Yesterday':'Today';
+  if(dmPending&&dmPending.date===target){
+    box.innerHTML='<div class="card"><h2>'+when+' — urge-free</h2>'
+      +'<label class="fld" for="dmNote">Where would an urge previously have shown up today?</label>'
+      +'<input type="text" id="dmNote" placeholder="e.g. phone in bed after my shift">'
+      +'<button class="btn" id="dmSave">Bank it</button>'
+      +'<button class="btn ghost" id="dmBack">Back</button></div>';
+    $('dmSave').addEventListener('click',function(){
+      saveDayMark(target,'urge-free',$('dmNote').value.trim(),late);
+      dmPending=null;renderHome();
+    });
+    $('dmBack').addEventListener('click',function(){dmPending=null;renderDayMark();});
+    return;
+  }
+  box.innerHTML='<div class="card"><h2>Close out '+(late?'yesterday':'today')+'</h2>'
+    +'<p class="small">Three honest states, fifteen seconds. Nothing here can go down — an unmarked day is just unrecorded, never a failure.</p>'
+    +'<div class="btnrow"><button class="btn mint small" data-s="urge-free">Urge-free</button></div>'
+    +'<div class="btnrow"><button class="btn small" data-s="faced-clean">Urge faced — stayed clean</button></div>'
+    +'<div class="btnrow"><button class="btn danger small" data-s="lapsed">Lapsed</button></div></div>';
+  box.querySelectorAll('[data-s]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var st=b.getAttribute('data-s');
+      if(st==='urge-free'){dmPending={date:target,late:late};renderDayMark();return;}
+      var eff=saveDayMark(target,st,'',late);
+      if(eff.route==='breaker'){startBreaker();return;}
+      renderHome();
+    });
+  });
+}
+
+/* ---- Evidence Review + Stats ---- */
+function renderEvidence(){
+  var el=$('evidenceBox');if(!el)return;
+  var bt=bankTotals();
+  if(!DB.victories.length){
+    el.innerHTML='<p class="small">No victories banked yet. Finish a surf and the flow banks the first one — prediction vs outcome, what you did, the receipt.</p>';return;
+  }
+  var wins=DB.victories.filter(function(v){return v.kind!=='day';});
+  var hardest=wins.slice().sort(function(a,b){return (b.difficulty||0)-(a.difficulty||0);}).slice(0,3);
+  var biggest=wins.slice().sort(function(a,b){return (b.violationDelta||0)-(a.violationDelta||0);}).slice(0,3);
+  var retroN=wins.filter(function(v){return v.retro;}).length;
+  var noAudio=wins.filter(function(v){return !v.celebration;}).length;
+  function winDetails(v,open){
+    var det=[];
+    det.push(['When',fmtDT(v.ts)]);
+    if(v.predictedProb!=null)det.push(['Predicted',v.predictedProb+'% chance of acting']);
+    if(v.actualPeak!=null)det.push(['Peak','predicted '+(v.predictedPeak==null?'—':v.predictedPeak)+'/10 · actual '+v.actualPeak+'/10']);
+    if(v.durationMin!=null)det.push(['Duration',Math.round(v.durationMin)+' min']);
+    det.push(['Expectancy violation',(v.violationDelta||0)+' points']);
+    if(v.novelty||v.setting)det.push(['Context',[v.novelty,v.setting].filter(Boolean).join(' · ')]);
+    if(v.aids&&v.aids.length)det.push(['Aids',v.aids.join(', ')]);
+    if(v.attribution)det.push(['What I did',v.attribution]);
+    if(v.triggerText)det.push(['Trigger',v.triggerText]);
+    if(v.predictionText)det.push(['Prediction',v.predictionText]);
+    var line=fmtDT(v.ts)+' · peak '+(v.actualPeak==null?'—':v.actualPeak)+'/10 · '+(v.durationMin==null?'—':Math.round(v.durationMin)+'m')+' · Δ '+(v.violationDelta||0);
+    return '<details class="logitem"'+(open?' open':'')+'><summary><span>'+esc(line)+'</span></summary><div class="body">'
+      +det.map(function(p){return '<div class="kv"><span>'+esc(p[0])+'</span><b>'+esc(p[1])+'</b></div>';}).join('')
+      +'<button class="btn ghost small evPlay" style="margin-top:10px">Play victory sound</button></div></details>';
+  }
+  var html='<div class="kv"><span>Victories banked</span><b>'+bt.victories+'</b></div>'
+    +'<div class="kv"><span>Clean days banked</span><b>'+bt.banked+'</b></div>';
+  if(hardest.length){
+    html+='<p class="fldlabel">Hardest wins</p>'+hardest.map(function(v,i){return winDetails(v,i===0);}).join('');
+  }
+  if(biggest.length){
+    html+='<p class="fldlabel">Biggest expectancy violations</p>'+biggest.map(function(v){
+      return '<div class="kv"><span>'+esc(fmtDT(v.ts))+'</span><b>Predicted '+(v.predictedProb==null?'—':v.predictedProb)+'% — didn\'t act</b></div>';
+    }).join('');
+  }
+  html+='<p class="fldlabel">Fading — needing less help</p>'
+    +'<div class="kv"><span>Wins logged after the fact (no app during the urge)</span><b>'+retroN+'</b></div>'
+    +'<div class="kv"><span>Wins banked without the sound</span><b>'+noAudio+'</b></div>'
+    +'<p class="small" style="margin-top:10px">Open any win above and play the sound on it — that\'s the reinstatement slot: your own evidence, before a hard situation.</p>';
+  el.innerHTML=html;
+  el.querySelectorAll('.evPlay').forEach(function(b){
+    b.addEventListener('click',function(){playVictorySound();});
+  });
+}
+function renderVB(){
+  var bt=bankTotals();
+  if($('vbSurfed'))$('vbSurfed').textContent=bt.surfed;
+  if($('vbVic'))$('vbVic').textContent=bt.victories;
+  if($('vbBank'))$('vbBank').textContent=bt.banked;
+  if($('vbHard'))$('vbHard').textContent=bt.hardest?bt.hardest.actualPeak+'/10 · '+Math.round(bt.hardest.durationMin||0)+'m':'—';
+  if($('vbBig'))$('vbBig').textContent=bt.biggest?(bt.biggest.violationDelta||0)+' pts':'—';
+}
 
 /* ================= INIT ================= */
 load();save();
