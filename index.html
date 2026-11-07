@@ -598,9 +598,9 @@ input[type=number]{width:100%;background:var(--surface-2);border:1px solid var(-
       <button class="btn danger small" id="recStopBtn" hidden>Stop</button>
     </div>
     <div class="btnrow">
-      <button class="btn ghost small" id="recPlayBtn">Play my recording</button>
-      <button class="btn ghost small" id="recDelBtn">Delete recording</button>
+      <button class="btn ghost small" id="recPlayBtn">Play active recording</button>
     </div>
+    <div id="recList"></div>
     <p class="small" id="recStatus"></p>
   </div>
   <div class="card">
@@ -1215,11 +1215,42 @@ function applyDayMark(state){
 }
 
 /* ---- Victory sound: his voice, or a built-in tone until he records ---- */
-var AKEY='gogginsVictoryAudio';
-function hasCustomAudio(){try{return !!localStorage.getItem(AKEY);}catch(e){return false;}}
+var AKEY='gogginsVictoryAudio',LKEY='gogginsVictoryAudioLib';
+function audioLib(){
+  try{var r=localStorage.getItem(LKEY);if(r){var d=JSON.parse(r);if(d&&Array.isArray(d.entries))return d;}}catch(e){}
+  var lib={entries:[],activeId:null};
+  var legacy=null;try{legacy=localStorage.getItem(AKEY);}catch(e){}
+  if(legacy){
+    var le={id:uid(),ts:Date.now(),dataUrl:legacy,legacy:true,winTs:null};
+    lib.entries.push(le);lib.activeId=le.id;saveAudioLib(lib);
+    try{localStorage.removeItem(AKEY);}catch(e2){}
+  }
+  return lib;
+}
+function saveAudioLib(lib){try{localStorage.setItem(LKEY,JSON.stringify(lib));}catch(e){}}
+function activeAudioData(){
+  var lib=audioLib();
+  for(var i=0;i<lib.entries.length;i++)if(lib.entries[i].id===lib.activeId)return lib.entries[i].dataUrl;
+  return lib.entries.length?lib.entries[lib.entries.length-1].dataUrl:null;
+}
+function hasCustomAudio(){return !!activeAudioData();}
+function addRecording(dataUrl,winTs){
+  var lib=audioLib();
+  var e={id:uid(),ts:Date.now(),dataUrl:dataUrl,winTs:winTs||null};
+  lib.entries.push(e);lib.activeId=e.id;
+  try{localStorage.setItem(LKEY,JSON.stringify(lib));}catch(err){return null;}
+  return e;
+}
+function setActiveRecording(id){var lib=audioLib();lib.activeId=id;saveAudioLib(lib);return lib;}
+function deleteRecording(id){
+  var lib=audioLib();var wasActive=lib.activeId===id;
+  lib.entries=lib.entries.filter(function(x){return x.id!==id;});
+  if(wasActive)lib.activeId=lib.entries.length?lib.entries[lib.entries.length-1].id:null;
+  saveAudioLib(lib);return lib;
+}
 function playVictorySound(){
   try{
-    var d=null;try{d=localStorage.getItem(AKEY);}catch(e){}
+    var d=activeAudioData();
     if(d&&typeof Audio!=='undefined'){var a=new Audio(d);var p=a.play();if(p&&p.catch)p.catch(function(){});return true;}
     var AC=(typeof window!=='undefined')&&(window.AudioContext||window.webkitAudioContext);
     if(!AC)return false;
@@ -1242,10 +1273,52 @@ function playVictorySound(){
 var vRec=null,vStream=null,vChunks=[];
 function renderAudioCard(){
   var el=$('audioStatus');if(!el)return;
-  el.textContent=hasCustomAudio()
-    ?'Your recorded voice is the victory sound. Re-record anytime — the new take replaces the old one.'
-    :'No recording yet — a short built-in tone plays in its place. Record your voice and it takes over.';
+  var lib=audioLib();
+  el.textContent=lib.entries.length
+    ?lib.entries.length+(lib.entries.length===1?' recording':' recordings')+' saved on this device — every take is kept. The one marked Active is your victory sound: it plays at receipts and in Evidence.'
+    :'No recordings yet — a short built-in tone plays in its place. Record your voice and it takes over.';
+  renderRecList();
 }
+var recArm={};
+function renderRecList(){
+  var box=$('recList');if(!box)return;
+  var lib=audioLib();
+  if(!lib.entries.length){box.innerHTML='';return;}
+  box.innerHTML=lib.entries.slice().reverse().map(function(e){
+    var title=e.legacy?'Earlier recording':esc(fmtDT(e.ts));
+    var sub=e.winTs?'<div class="small">Recorded at your win — '+esc(fmtDT(e.winTs))+'</div>':'';
+    var active=e.id===lib.activeId;
+    return '<div class="planitem"><span><b>'+title+'</b>'+(active?' <span class="tag surf">Active</span>':'')+sub+'</span>'
+      +'<span style="display:flex;gap:8px;flex-shrink:0;align-items:center">'
+      +(active?'':'<button class="delbtn" data-act="'+e.id+'" aria-label="Set as active recording" style="font-size:13px;width:auto">Set active</button>')
+      +'<button class="delbtn" data-play="'+e.id+'" aria-label="Play this recording" style="font-size:13px;width:auto">Play</button>'
+      +'<button class="delbtn" data-del="'+e.id+'" aria-label="Delete this recording">&times;</button>'
+      +'</span></div>';
+  }).join('');
+}
+$('recList').addEventListener('click',function(e){
+  var play=e.target.closest('[data-play]'),act=e.target.closest('[data-act]'),del=e.target.closest('[data-del]');
+  if(play){
+    var lib=audioLib();
+    for(var i=0;i<lib.entries.length;i++)if(lib.entries[i].id===play.getAttribute('data-play')){
+      if(typeof Audio!=='undefined'){var a=new Audio(lib.entries[i].dataUrl);var p=a.play();if(p&&p.catch)p.catch(function(){});}
+    }
+    return;
+  }
+  if(act){setActiveRecording(act.getAttribute('data-act'));renderAudioCard();$('recStatus').textContent='Active recording changed.';return;}
+  if(del){
+    var id=del.getAttribute('data-del');
+    if(recArm[id]){
+      delete recArm[id];
+      var lib2=deleteRecording(id);
+      renderAudioCard();
+      $('recStatus').textContent=lib2.entries.length?'Recording deleted.':'Recording deleted — the built-in tone is active again.';
+    }else{
+      recArm[id]=1;del.classList.add('armed');del.textContent='Confirm?';
+      setTimeout(function(){if(del.isConnected){delete recArm[id];del.classList.remove('armed');del.innerHTML='&times;';}},3200);
+    }
+  }
+});
 $('recBtn').addEventListener('click',function(){
   if(typeof navigator==='undefined'||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||typeof MediaRecorder==='undefined'){
     $('recStatus').textContent='Recording is not available in this browser.';return;
@@ -1258,8 +1331,10 @@ $('recBtn').addEventListener('click',function(){
       var blob=new Blob(vChunks,{type:(vChunks[0]&&vChunks[0].type)||'audio/webm'});
       var r=new FileReader();
       r.onload=function(){
-        try{localStorage.setItem(AKEY,r.result);$('recStatus').textContent='Saved — your voice is now the victory sound.';}
-        catch(err){$('recStatus').textContent='Could not save that recording (storage may be full).';}
+        var ctx=null;
+        try{var raw=localStorage.getItem('gogginsRecCtx');if(raw){ctx=JSON.parse(raw);localStorage.removeItem('gogginsRecCtx');}}catch(e){}
+        var saved=addRecording(r.result,ctx?ctx.winTs:null);
+        $('recStatus').textContent=saved?'Saved to your library and set Active — your voice is now the victory sound.':'Could not save that recording (storage may be full — delete an old recording and try again).';
         renderAudioCard();
       };
       r.readAsDataURL(blob);
@@ -1275,13 +1350,8 @@ $('recBtn').addEventListener('click',function(){
 });
 $('recStopBtn').addEventListener('click',function(){if(vRec&&vRec.state!=='inactive')vRec.stop();});
 $('recPlayBtn').addEventListener('click',function(){
-  if(!hasCustomAudio()){$('recStatus').textContent='No recording yet — record one above and it will play here.';return;}
+  if(!hasCustomAudio()){$('recStatus').textContent='No recordings yet — record one above and the Active one will play here.';return;}
   playVictorySound();
-});
-$('recDelBtn').addEventListener('click',function(){
-  try{localStorage.removeItem(AKEY);}catch(e){}
-  $('recStatus').textContent='Recording deleted — the built-in tone is active again.';
-  renderAudioCard();
 });
 
 /* ---- The victory flow (5 steps, fixed order) ---- */
@@ -1426,7 +1496,7 @@ function enterReceipt(){
   $('vRecOffer').innerHTML=hasCustomAudio()?''
     :'<div class="guard" style="margin-top:12px">That was the built-in tone. The real victory sound is your own voice — record the prediction you beat + what you did, and it replaces the tone everywhere.<br><button class="btn small" id="vRecNow" style="margin-top:10px">Record your victory sound</button></div>';
   var rn=$('vRecNow');
-  if(rn)rn.addEventListener('click',function(){V=null;showTab('review');setTimeout(function(){var c=$('audioCard');if(c)c.scrollIntoView({behavior:'smooth',block:'center'});},80);});
+  if(rn)rn.addEventListener('click',function(){try{localStorage.setItem('gogginsRecCtx',JSON.stringify({winTs:rec.ts}));}catch(e){} V=null;showTab('review');setTimeout(function(){var c=$('audioCard');if(c)c.scrollIntoView({behavior:'smooth',block:'center'});},80);});
 }
 $('vPlayBtn').addEventListener('click',function(){
   if(playVictorySound()&&V&&V.savedId){
